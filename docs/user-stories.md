@@ -1,3 +1,8 @@
+---
+title: User Stories
+layout: page
+---
+
 # User Stories (Detailed)
 
 Status tags: `[MVP]`, `[POST-MVP]`, `[FUTURE]`.

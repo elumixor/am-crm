@@ -1,3 +1,8 @@
+---
+title: Project Documentation
+layout: page
+---
+
 # Project Documentation
 
 Central documentation hub for the Ananda Marga CRM & Mentorship Platform.

@@ -1,3 +1,8 @@
+---
+title: Project Vision & Context
+layout: page
+---
+
 # Project Vision & Context
 
 ## 1. Vision

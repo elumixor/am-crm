@@ -1,9 +1,26 @@
+---
+title: Architecture Overview
+layout: page
+---
+
 # Architecture Overview
 
 ## High-Level Approach
 Monolith-first Next.js (App Router) + shared PostgreSQL database accessed by web app and Telegram bot.
 
 ## Components
+
+| Role          | Responsibilities                                   | Notes                      |
+|---------------|---------------------------------------------------|----------------------------|
+| Newcomer      | Attend events, register, start practices           | Not initiated yet          |
+| Margii        | Regular meditation, lesson progression             | Has at least 1 lesson      |
+| Mentor        | Guide mentees, track progress, give support        | Can be unit secretary too  |
+| Unit Secretary| Track unit status, oversee mentors and margiis     | Acts as mentor if needed   |
+| Acarya        | Give initiation, track initiates, support margiis  | Monk role                  |
+| Admin         | Manage accounts, roles, and units                  | Full system permissions    |
+
+
+
 | Component | Responsibility | Tech |
 |-----------|----------------|------|
 | Web UI | Pages, dashboards, forms | Next.js (React, Tailwind, Radix) |

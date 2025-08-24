@@ -1,3 +1,8 @@
+---
+title: Data Model
+layout: page
+---
+
 # Data Model (Detailed)
 
 ## Entities

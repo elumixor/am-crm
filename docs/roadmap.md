@@ -1,3 +1,8 @@
+---
+title: Roadmap & Milestones
+layout: page
+---
+
 # Roadmap & Milestones
 
 ## Phase 0 – Inception

@@ -1,0 +1,8 @@
+title: "AM CRM Docs"
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+theme: minima
+exclude:
+  - README.md
