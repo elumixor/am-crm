@@ -3,22 +3,18 @@
 > Central platform to support spiritual progress tracking, mentorship, unit visibility, and initiation journey inside Ananda Marga.
 
 ## Overview
-This repository houses the code. Full project documentation now lives in the GitHub Wiki (mirrored here under `wiki/` for offline editing).
+This repository houses the code. Full project documentation now lives in the `docs/` folder (published via GitHub Pages when enabled).
 
-## Documentation (Wiki)
-Primary documentation is in the GitHub Wiki. For offline work you can optionally clone it into a local `wiki/` folder (ignored by git) using:
-
-```
-git clone https://github.com/elumixor/am-crm.wiki.git wiki
-```
+## Documentation
+Authoritative docs are stored in `docs/` and (once configured) published at the project Pages URL.
 
 ### Quick Links
-- [Public Wiki Home](https://github.com/elumixor/am-crm/wiki)
-- [Vision & Context](https://github.com/elumixor/am-crm/wiki/Project-Vision)
-- [User Stories](https://github.com/elumixor/am-crm/wiki/User-Stories)
-- [Architecture Overview](https://github.com/elumixor/am-crm/wiki/Architecture)
-- [Data Model Details](https://github.com/elumixor/am-crm/wiki/Data-Model)
-- [Roadmap & Milestones](https://github.com/elumixor/am-crm/wiki/Roadmap)
+- [Docs Index](./docs/index.md)
+- [Vision & Context](./docs/project-vision.md)
+- [User Stories](./docs/user-stories.md)
+- [Architecture Overview](./docs/architecture.md)
+- [Data Model](./docs/data-model.md)
+- [Roadmap](./docs/roadmap.md)
 
 ## MVP Snapshot
 Core capabilities targeted for the first usable release:
@@ -51,7 +47,7 @@ packages/
 4. Ensure lint & tests pass before PR.
 
 ## Roadmap Status
-See the [Roadmap](https://github.com/elumixor/am-crm/wiki/Roadmap) and open Issues (labels: `mvp`, `post-mvp`).
+See the [Roadmap](./docs/roadmap.md) and open Issues (labels: `mvp`, `post-mvp`).
 
 ## License
 TBD (placeholder). Do not publicly distribute until finalized.
