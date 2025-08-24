@@ -5,13 +5,20 @@
 ## Overview
 This repository houses the code. Full project documentation now lives in the GitHub Wiki (mirrored here under `wiki/` for offline editing).
 
-## Quick Links (Wiki)
-- Public Wiki: https://github.com/elumixor/am-crm/wiki
-- Vision & Context: https://github.com/elumixor/am-crm/wiki/Project-Vision
-- User Stories: https://github.com/elumixor/am-crm/wiki/User-Stories
-- Architecture Overview: https://github.com/elumixor/am-crm/wiki/Architecture
-- Data Model Details: https://github.com/elumixor/am-crm/wiki/Data-Model
-- Roadmap & Milestones: https://github.com/elumixor/am-crm/wiki/Roadmap
+## Documentation (Wiki)
+Primary documentation is in the GitHub Wiki. For offline work you can optionally clone it into a local `wiki/` folder (ignored by git) using:
+
+```
+git clone https://github.com/elumixor/am-crm.wiki.git wiki
+```
+
+### Quick Links
+- [Public Wiki Home](https://github.com/elumixor/am-crm/wiki)
+- [Vision & Context](https://github.com/elumixor/am-crm/wiki/Project-Vision)
+- [User Stories](https://github.com/elumixor/am-crm/wiki/User-Stories)
+- [Architecture Overview](https://github.com/elumixor/am-crm/wiki/Architecture)
+- [Data Model Details](https://github.com/elumixor/am-crm/wiki/Data-Model)
+- [Roadmap & Milestones](https://github.com/elumixor/am-crm/wiki/Roadmap)
 
 ## MVP Snapshot
 Core capabilities targeted for the first usable release:
@@ -44,7 +51,7 @@ packages/
 4. Ensure lint & tests pass before PR.
 
 ## Roadmap Status
-See `wiki/Roadmap.md` and open Issues (labels: `mvp`, `post-mvp`).
+See the [Roadmap](https://github.com/elumixor/am-crm/wiki/Roadmap) and open Issues (labels: `mvp`, `post-mvp`).
 
 ## License
 TBD (placeholder). Do not publicly distribute until finalized.
