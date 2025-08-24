@@ -9,12 +9,12 @@ This repository houses the code. Full project documentation now lives in the `do
 Authoritative docs are stored in `docs/` and (once configured) published at the project Pages URL.
 
 ### Quick Links
-- [Docs Index](./docs/index.md)
-- [Vision & Context](./docs/project-vision.md)
-- [User Stories](./docs/user-stories.md)
-- [Architecture Overview](./docs/architecture.md)
-- [Data Model](./docs/data-model.md)
-- [Roadmap](./docs/roadmap.md)
+- [Docs Index](https://elumixor.github.io/am-crm/index.html)
+- [Vision & Context](https://elumixor.github.io/am-crm/project-vision.html)
+- [User Stories](https://elumixor.github.io/am-crm/user-stories.html)
+- [Architecture Overview](https://elumixor.github.io/am-crm/architecture.html)
+- [Data Model](https://elumixor.github.io/am-crm/data-model.html)
+- [Roadmap](https://elumixor.github.io/am-crm/roadmap.html)
 
 ## MVP Snapshot
 Core capabilities targeted for the first usable release:
@@ -47,7 +47,7 @@ packages/
 4. Ensure lint & tests pass before PR.
 
 ## Roadmap Status
-See the [Roadmap](./docs/roadmap.md) and open Issues (labels: `mvp`, `post-mvp`).
+See the [Roadmap](https://elumixor.github.io/am-crm/roadmap.html) and open Issues (labels: `mvp`, `post-mvp`).
 
 ## License
 TBD (placeholder). Do not publicly distribute until finalized.
