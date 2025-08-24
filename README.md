@@ -6,11 +6,12 @@
 This repository houses the code. Full project documentation now lives in the GitHub Wiki (mirrored here under `wiki/` for offline editing).
 
 ## Quick Links (Wiki)
-- Vision & Context: `wiki/Project-Vision.md`
-- User Stories: `wiki/User-Stories.md`
-- Architecture Overview: `wiki/Architecture.md`
-- Data Model Details: `wiki/Data-Model.md`
-- Roadmap & Milestones: `wiki/Roadmap.md`
+- Public Wiki: https://github.com/elumixor/am-crm/wiki
+- Vision & Context: https://github.com/elumixor/am-crm/wiki/Project-Vision
+- User Stories: https://github.com/elumixor/am-crm/wiki/User-Stories
+- Architecture Overview: https://github.com/elumixor/am-crm/wiki/Architecture
+- Data Model Details: https://github.com/elumixor/am-crm/wiki/Data-Model
+- Roadmap & Milestones: https://github.com/elumixor/am-crm/wiki/Roadmap
 
 ## MVP Snapshot
 Core capabilities targeted for the first usable release:
