@@ -22,6 +22,7 @@ layout: page
 - Lack of structured learning journey visibility.
 
 ## 3. Personas & Roles
+
 | Persona | Core Needs |
 |---------|------------|
 | Seeker | Onboard easily, connect with mentor, explore basics. |
@@ -59,6 +60,3 @@ See [User Stories](./user-stories.md) for the exhaustive, tagged list.
 
 ## 8. Open Questions
 Tracked via issues labeled `question`.
-
----
-_Last updated: placeholder._

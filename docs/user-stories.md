@@ -55,6 +55,3 @@ Status tags: `[MVP]`, `[POST-MVP]`, `[FUTURE]`.
 ## Analytics & Metrics (Future)
 - [FUTURE] Engagement trends.
 - [FUTURE] Cohort analysis.
-
----
-_Last updated: placeholder._

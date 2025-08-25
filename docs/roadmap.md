@@ -51,6 +51,7 @@ layout: page
 See Issues with label `future` / `icebox`.
 
 ## Labels (Proposed)
+
 | Label | Meaning |
 |-------|---------|
 | mvp | Required for first usable release |
@@ -60,5 +61,3 @@ See Issues with label `future` / `icebox`.
 | blocked | Waiting on dependency |
 | good-first-issue | Low complexity onboarding |
 
----
-_Last updated: placeholder._

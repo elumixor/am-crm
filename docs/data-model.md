@@ -70,5 +70,3 @@ NeedsAttention if
 - Use seeds for dev bootstrap.
 - Prefer additive changes; soft delete for removals.
 
----
-_Last updated: placeholder._

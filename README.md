@@ -15,6 +15,7 @@ Authoritative docs are stored in `docs/` and (once configured) published at the 
 - [Architecture Overview](https://elumixor.github.io/am-crm/architecture.html)
 - [Data Model](https://elumixor.github.io/am-crm/data-model.html)
 - [Roadmap](https://elumixor.github.io/am-crm/roadmap.html)
+- [Public API](https://elumixor.github.io/am-crm/api.html)
 
 ## MVP Snapshot
 Core capabilities targeted for the first usable release:
