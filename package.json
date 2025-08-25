@@ -1,0 +1,28 @@
+{
+  "name": "am-crm",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+  "build": "turbo run build",
+  "dev": "turbo run dev --parallel",
+  "test": "turbo run test",
+  "lint": "biome lint .",
+  "format": "biome format --write .",
+  "prisma:generate": "bun --filter @am-crm/db prisma generate",
+  "prisma:migrate": "bun --filter @am-crm/db prisma migrate dev",
+  "dev:api": "bun --filter @am-crm/api run dev",
+  "dev:web": "bun --filter @am-crm/web run dev",
+  "dev:bot": "bun --filter @am-crm/telegram-bot run dev"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.4.0",
+  "turbo": "^2.0.6",
+  "@biomejs/biome": "^2.2.2",
+    "vitest": "^1.6.0"
+  },
+  "packageManager": "bun@1.2.20"
+}

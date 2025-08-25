@@ -1,0 +1,19 @@
+{
+  "name": "@am-crm/db",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "build": "echo 'No build step for db'",
+    "dev": "echo 'DB package idle'",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.18.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.18.0",
+    "vitest": "^1.6.0"
+  }
+}

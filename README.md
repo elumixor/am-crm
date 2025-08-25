@@ -55,3 +55,31 @@ TBD (placeholder). Do not publicly distribute until finalized.
 
 ---
 Expanded documentation lives in the Wiki. This README intentionally minimal.
+
+## Current Code Scaffold (WIP)
+
+Temporary Bun + Turbo monorepo (will evolve to planned layout):
+
+```
+packages/
+  api/            # Hono HTTP API (placeholder routes)
+  db/             # Prisma schema (User model) – migration pending (ensure DATABASE_URL includes user)
+  shared/         # Shared utilities (sample function + test)
+  web/            # Minimal React placeholder
+  telegram-bot/   # Telegraf bot skeleton
+```
+
+Tooling: Bun, Turbo, Prisma, Vitest, @biomejs/biome.
+
+Setup:
+1. Copy .env.example -> .env and edit.
+2. Ensure postgres db am_crm_dev exists & owned by your user.
+3. Generate client: `bun run prisma:generate`.
+4. (Pending) Resolve P1010 permission to run first migration.
+5. Run dev processes: `bun run dev`.
+
+Next steps candidates:
+- Resolve Prisma migration permission (P1010).
+- Replace web placeholder with Next.js app.
+- Add CI workflows.
+- Add domain core package & logging.
