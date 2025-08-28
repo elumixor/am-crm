@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest';
-import { helloShared } from './index';
+import { describe, expect, it } from "bun:test";
+import { helloShared } from "./index";
 
-describe('helloShared', () => {
-  it('returns phrase', () => {
-    expect(helloShared()).toBe('shared works');
+describe("helloShared", () => {
+  it("returns phrase", () => {
+    expect(helloShared()).toBe("shared works");
   });
 });

@@ -9,11 +9,6 @@ coverage
 *.tsbuildinfo
 .DS_Store
 pnpm-debug.log*
-/.turbo
-node_modules
-dist
-.DS_Store
-.env
-.env.*
+.turbo/
 .prisma
-coverage
+.next/

@@ -10,8 +10,47 @@ datasource db {
 }
 
 model User {
+  id          String           @id @default(cuid())
+  createdAt   DateTime         @default(now())
+  email       String           @unique
+  name        String?
+  traits      UserTrait[]
+  memberships UnitMembership[]
+}
+
+model UserTrait {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
-  email     String   @unique
-  name      String?
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  trait     String
+
+  @@unique([userId, trait])
+  @@index([trait])
+}
+
+model Unit {
+  id          String           @id @default(cuid())
+  createdAt   DateTime         @default(now())
+  name        String           @unique
+  description String?
+  memberships UnitMembership[]
+}
+
+enum UnitRole {
+  MEMBER
+  SECRETARY
+}
+
+model UnitMembership {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  unit      Unit     @relation(fields: [unitId], references: [id])
+  unitId    String
+  role      UnitRole @default(MEMBER)
+
+  @@unique([userId, unitId])
+  @@index([unitId, role])
 }

@@ -6,23 +6,22 @@
     "packages/*"
   ],
   "scripts": {
-  "build": "turbo run build",
-  "dev": "turbo run dev --parallel",
-  "test": "turbo run test",
-  "lint": "biome lint .",
-  "format": "biome format --write .",
-  "prisma:generate": "bun --filter @am-crm/db prisma generate",
-  "prisma:migrate": "bun --filter @am-crm/db prisma migrate dev",
-  "dev:api": "bun --filter @am-crm/api run dev",
-  "dev:web": "bun --filter @am-crm/web run dev",
-  "dev:bot": "bun --filter @am-crm/telegram-bot run dev"
+    "build": "dotenv -e .env turbo run build",
+    "dev": "dotenv -e .env turbo run dev --parallel",
+    "test": "dotenv -e .env turbo run test",
+    "biome": "biome check",
+    "lint": "biome lint",
+    "format": "biome format --write",
+    "migrate": "dotenv -e .env turbo run migrate",
+    "generate": "dotenv -e .env turbo run generate",
+    "dev:db": "docker compose up -d db"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.2.2",
     "@types/bun": "latest",
-    "typescript": "^5.4.0",
-  "turbo": "^2.0.6",
-  "@biomejs/biome": "^2.2.2",
-    "vitest": "^1.6.0"
+    "dotenv-cli": "^10.0.0",
+    "turbo": "^2.0.6",
+    "typescript": "^5.4.0"
   },
   "packageManager": "bun@1.2.20"
 }
