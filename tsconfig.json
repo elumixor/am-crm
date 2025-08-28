@@ -9,7 +9,7 @@
     "allowJs": true,
 
     // Bundler mode
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "noEmit": true,
@@ -31,7 +31,10 @@
       "@am-crm/db": ["packages/db"],
       "@am-crm/api": ["packages/api/src"],
       "@am-crm/web": ["packages/web/src"],
-      "@am-crm/telegram-bot": ["packages/telegram-bot/src"]
+  "@am-crm/telegram-bot": ["packages/telegram-bot/src"],
+  "@am-crm/core": ["packages/core/src"],
+  "@am-crm/ui": ["packages/ui/src"],
+  "@am-crm/config": ["packages/config/src"]
     }
   },
   "include": ["packages/**/*", "index.ts"],

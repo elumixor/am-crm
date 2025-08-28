@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "bun run src/index.ts",
     "build": "bun build ./src/index.ts --outdir dist",
-    "test": "vitest"
+    "test": "bun test"
   },
   "dependencies": {
     "@am-crm/db": "workspace:*",
@@ -14,7 +14,6 @@
     "@prisma/client": "^5.18.0"
   },
   "devDependencies": {
-    "vitest": "^1.6.0",
     "prisma": "^5.18.0"
   }
 }

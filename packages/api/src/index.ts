@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { PrismaClient } from "@prisma/client";
 import { helloShared } from "@am-crm/shared";
+import { serve } from "bun";
 
 const prisma = new PrismaClient();
 const app = new Hono();
@@ -18,6 +19,6 @@ export default {
 };
 
 if (import.meta.main) {
-  Bun.serve({ port: 3001, fetch: app.fetch });
+  serve({ port: 3001, fetch: app.fetch });
   console.log("API server listening on http://localhost:3001");
 }

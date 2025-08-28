@@ -3,17 +3,14 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "build": "echo 'No build step for db'",
-    "dev": "echo 'DB package idle'",
-    "test": "vitest"
+    "migrate": "prisma migrate dev",
+    "generate": "prisma generate",
+    "test": "bun test"
   },
   "dependencies": {
     "@prisma/client": "^5.18.0"
   },
   "devDependencies": {
-    "prisma": "^5.18.0",
-    "vitest": "^1.6.0"
+    "prisma": "^5.18.0"
   }
 }

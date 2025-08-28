@@ -1,5 +1,5 @@
-import React from 'react';
-import { renderToString } from 'react-dom/server';
+import React from "react";
+import { renderToString } from "react-dom/server";
 
 const App = () => <h1>AM CRM Web UI</h1>;
 
