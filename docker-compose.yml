@@ -1,0 +1,31 @@
+version: "3.9"
+services:
+  # Database service
+  db:  # db is the image name
+    image: "postgres:16-alpine"
+    restart: unless-stopped
+    container_name: "am_crm_db"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "am_crm"
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  # Server application
+  app:
+    build: .
+    container_name: "am_crm_app"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/am_crm"
+    volumes:
+      - .:/usr/src/app
+    command: sh -c "bunx prisma migrate dev && npm run dev"
+    ports:
+      - "3000:3000"
+volumes:
+  db_data:
