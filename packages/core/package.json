@@ -1,0 +1,15 @@
+{
+  "name": "@am-crm/core",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "bun build ./src/index.ts --outdir dist",
+    "dev": "bun run build --watch",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@am-crm/db": "workspace:*",
+    "@am-crm/shared": "workspace:*"
+  }
+}
