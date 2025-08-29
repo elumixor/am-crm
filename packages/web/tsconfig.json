@@ -4,6 +4,7 @@
     "jsx": "preserve",
     "outDir": "dist",
     "strict": true,
+  "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "incremental": true,
     "plugins": [
       {
