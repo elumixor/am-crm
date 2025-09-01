@@ -63,7 +63,3 @@ See [User Stories](./user-stories.md) for the exhaustive, tagged list.
 ## 8. Open Questions
 
 Tracked via issues labeled `question`.
-
----
-
-_Last updated: placeholder._
