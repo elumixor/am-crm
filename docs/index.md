@@ -14,7 +14,3 @@ Central documentation hub for the Ananda Marga CRM & Mentorship Platform.
 
 When GitHub Pages is enabled (Settings → Pages → Build from branch → `main` / `/docs`), these files become available at:
 `https://elumixor.github.io/am-crm/`
-
----
-
-_This index is generated manually; keep links in sync when renaming files._

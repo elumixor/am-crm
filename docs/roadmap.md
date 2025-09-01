@@ -105,7 +105,3 @@ These are provisional and will be decomposed into concrete phases once MVP stabi
 | question         | Needs clarification               |
 | blocked          | Waiting on dependency             |
 | good-first-issue | Low complexity onboarding         |
-
----
-
-_Last updated: placeholder._

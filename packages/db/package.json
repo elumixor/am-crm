@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "migrate": "prisma migrate dev --name init",
+    "migrate:deploy": "prisma migrate deploy",
     "generate": "prisma generate",
     "test": "bun test"
   },

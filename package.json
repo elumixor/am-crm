@@ -13,6 +13,7 @@
     "lint": "biome lint",
     "format": "biome format --write",
     "migrate": "dotenv -e .env turbo run migrate",
+    "migrate:deploy": "dotenv -e .env turbo run migrate:deploy",
     "generate": "dotenv -e .env turbo run generate",
     "dev:db": "docker compose up -d db"
   },

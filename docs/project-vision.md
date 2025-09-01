@@ -73,7 +73,3 @@ Tracked via issues labeled `question`.
 - Educational – course content & progress signals.
 - Finance – donations, expenses, budget visibility (lightweight ledger).
 - Announcement Engine – templated multi-channel messaging (Telegram + email) inc. image generation.
-
----
-
-_Last updated: placeholder._

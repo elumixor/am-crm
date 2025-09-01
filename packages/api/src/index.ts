@@ -7,6 +7,9 @@ const app = new Hono();
 
 app.get("/", (c) => c.json({ ok: true, msg: helloShared() }));
 
+// Lightweight health / liveness endpoint (no DB dependency)
+app.get("/health", (c) => c.json({ status: "ok" }));
+
 // Users CRUD
 app.get("/users", async (c) => {
   const users = await prisma.user.findMany({ include: { traits: true, memberships: true } });

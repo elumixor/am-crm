@@ -1,0 +1,151 @@
+name: CI & Deploy Bun API
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+jobs:
+  build_test:
+    name: Lint / Test / Build
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.meta.outputs.image_tag }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Cache Bun packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            .turbo
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Create .env file
+        run: echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
+
+      - name: Generate Prisma client
+        run: bunx turbo run generate
+
+      - name: Lint
+        run: bun run lint
+
+      # - name: Test
+      #   run: bun run test
+
+      - name: Build (all workspaces)
+        run: bunx turbo run build
+
+      - name: Package build artifacts
+        run: |
+          mkdir -p ci-artifacts
+          # API dist & prisma engines
+          if [ -d packages/api/dist ]; then mkdir -p ci-artifacts/packages/api && cp -R packages/api/dist ci-artifacts/packages/api/; fi
+          if [ -d node_modules/.prisma ]; then mkdir -p ci-artifacts/node_modules && cp -R node_modules/.prisma ci-artifacts/node_modules/; fi
+          # Shared / bot / web dist (optional diagnostics)
+          for pkg in shared telegram-bot web; do
+            if [ -d packages/$pkg/dist ]; then mkdir -p ci-artifacts/packages/$pkg && cp -R packages/$pkg/dist ci-artifacts/packages/$pkg/; fi
+          done
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-dist
+          path: ci-artifacts
+          retention-days: 3
+
+      - name: Derive image tag
+        id: meta
+        run: |
+          # Use provided IMAGE_TAG var if set, else short sha
+          TAG="${{ vars.IMAGE_TAG }}"
+          if [ -z "$TAG" ]; then TAG=${GITHUB_SHA::12}; fi
+          echo "image_tag=$TAG" >> $GITHUB_OUTPUT
+
+  deploy:
+    name: Deploy
+    needs: build_test
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_TAG: ${{ needs.build_test.outputs.image_tag }}
+    steps:
+      - name: Checkout code (for Docker context)
+        uses: actions/checkout@v4
+
+      - name: Setup Bun (for potential scripts)
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Cache Bun packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            .turbo
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies (needed for prisma migrate)
+        run: bun install --frozen-lockfile
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-dist
+          path: .
+
+      - name: Rehydrate build artifacts into repo paths
+        run: |
+          # Place dist directories where Dockerfile expects them
+          if [ -d ci-artifacts/packages/api/dist ]; then rm -rf packages/api/dist && mkdir -p packages/api && cp -R ci-artifacts/packages/api/dist packages/api/; fi
+          if [ -d ci-artifacts/node_modules/.prisma ]; then mkdir -p node_modules && cp -R ci-artifacts/node_modules/.prisma node_modules/; fi
+
+      - name: Create .env file
+        run: echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
+
+      - name: Run Prisma migrations
+        run: bunx prisma migrate deploy --schema packages/db/prisma/schema.prisma
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Log in to ECR
+        run: |
+          aws ecr get-login-password --region ${{ vars.AWS_REGION }} \
+            | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com
+
+      - name: Build Docker image (reuse dist)
+        run: |
+          docker buildx build --platform linux/arm64 \
+            -t ${{ vars.ECR_REPO }} -f packages/api/Dockerfile .
+          docker tag ${{ vars.ECR_REPO }}:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPO }}:${IMAGE_TAG}
+
+      - name: Push Docker image to ECR
+        run: docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPO }}:${IMAGE_TAG}
+
+      - name: Deploy to ECS
+        run: |
+          aws ecs update-service \
+            --cluster ${{ vars.ECS_CLUSTER }} \
+            --service ${{ vars.ECS_SERVICE }} \
+            --force-new-deployment

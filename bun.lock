@@ -45,14 +45,6 @@
         "telegraf": "^4.16.3",
       },
     },
-    "packages/ui": {
-      "name": "@am-crm/ui",
-      "version": "0.0.1",
-      "peerDependencies": {
-        "react": ">=18",
-        "react-dom": ">=18",
-      },
-    },
     "packages/web": {
       "name": "@am-crm/web",
       "version": "0.0.1",
@@ -79,8 +71,6 @@
     "@am-crm/shared": ["@am-crm/shared@workspace:packages/shared"],
 
     "@am-crm/telegram-bot": ["@am-crm/telegram-bot@workspace:packages/telegram-bot"],
-
-    "@am-crm/ui": ["@am-crm/ui@workspace:packages/ui"],
 
     "@am-crm/web": ["@am-crm/web@workspace:packages/web"],
 

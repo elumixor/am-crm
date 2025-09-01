@@ -83,7 +83,3 @@ Status tags: `[MVP]`, `[POST-MVP]`, `[FUTURE]`.
 - [FUTURE] As the system, I schedule a DC announcement every Saturday.
 - [FUTURE] As a content editor, I update the announcement template without code deploy.
 - [FUTURE] As an admin, I trigger a re-send if announcement failed.
-
----
-
-_Last updated: placeholder._

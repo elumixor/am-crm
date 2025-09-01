@@ -10,6 +10,10 @@
       "dependsOn": [],
       "outputs": []
     },
+    "migrate:deploy": {
+      "dependsOn": [],
+      "outputs": []
+    },
     "generate": {
       "dependsOn": [],
       "outputs": []
