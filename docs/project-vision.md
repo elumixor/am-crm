@@ -54,7 +54,7 @@ See [User Stories](./user-stories.md) for the exhaustive, tagged list.
 ## 6. Non‑Goals (MVP)
 
 - Full LMS, advanced analytics, payments, multi‑language, microservices.
-	(These appear in long-term roadmap as future modules: educational content, finance ledger, retreats, announcement engine.)
+  (These appear in long-term roadmap as future modules: educational content, finance ledger, retreats, announcement engine.)
 
 ## 7. Success Metrics (Initial Hypotheses)
 
