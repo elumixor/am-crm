@@ -59,6 +59,31 @@ Status tags: `[MVP]`, `[POST-MVP]`, `[FUTURE]`.
 - [FUTURE] Engagement trends.
 - [FUTURE] Cohort analysis.
 
+## Collective Meditation / DC (Future)
+
+- [FUTURE] As a secretary, I create a weekly DC event template for my unit.
+- [FUTURE] As a participant, I get a Saturday announcement with time & theme.
+- [FUTURE] As a mentor, I view aggregate DC attendance for my mentees.
+- [FUTURE] As the system, I generate a branded announcement image automatically.
+
+## Retreats (Future)
+
+- [FUTURE] As an attendee, I register for a retreat with basic contact & dietary info.
+- [FUTURE] As an organizer, I export a participant roster.
+- [FUTURE] As finance steward, I see retreat income vs expenses summary.
+
+## Finance (Future)
+
+- [FUTURE] As a unit secretary, I record a donation tagged to my unit.
+- [FUTURE] As finance steward, I categorize an expense and attach it to a retreat.
+- [FUTURE] As an admin, I view monthly inflow/outflow dashboard.
+
+## Announcement Engine (Future)
+
+- [FUTURE] As the system, I schedule a DC announcement every Saturday.
+- [FUTURE] As a content editor, I update the announcement template without code deploy.
+- [FUTURE] As an admin, I trigger a re-send if announcement failed.
+
 ---
 
 _Last updated: placeholder._

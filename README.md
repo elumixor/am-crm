@@ -129,3 +129,31 @@ Next steps candidates:
 - Add CI workflows.
 - Add domain core package & logging.
 - Convert current SSR Hono-based web server into full Next.js app (future step).
+
+## Long-Term Feature Horizons (Future / Vision)
+
+These are NOT in scope for current MVP phases, but guide architectural decisions:
+
+- Collective Meditation (Dharma Chakra) Event System
+  - Weekly event entity (date, time, timezone, unit, theme, facilitator).
+  - Attendance tracking (manual first, later automated via check‑in links or bot reactions).
+  - Announcement generator: structured text + branded image (template engine: Satori/Canvas/OG image service) auto-posted to Telegram + optionally email.
+  - Scheduling: every Saturday generation + send (cron + idempotency guard).
+- Retreats Module
+  - Retreat entity (title, schedule, capacity, pricing tier, registration window).
+  - Registration & payment linkage (future Stripe/Donorbox integration).
+  - Participant roster export + dietary / accommodation fields.
+  - Post-retreat follow-up task list & engagement summary.
+- Educational Module (LMS‑lite)
+  - Course & lesson content (markdown-rich) with progress tracking.
+  - Mentor visibility into mentee course progress & blockers.
+  - Tagging to correlate course completion with practice/retention metrics.
+- Finance Module
+  - Donations & contributions ledger (simple double-entry or tagged transactions).
+  - Expense tracking per unit / retreat with budget variance.
+  - Basic dashboards: monthly inflow/outflow, retreat P&L snapshot.
+- Media & Communication Layer
+  - Central announcement publish pipeline (web -> Telegram -> email).
+  - Template versioning and A/B test hooks (far future).
+
+All above will be tracked initially as `future` labeled issues until promoted into a concrete phase.

@@ -54,6 +54,47 @@
 
 See Issues with label `future` / `icebox`.
 
+## Future Thematic Phases (Conceptual)
+
+These are provisional and will be decomposed into concrete phases once MVP stabilization & adoption metrics are met.
+
+### Collective Meditation (DC) Platform
+
+- Weekly DC event entity (unit, time, facilitator, theme)
+- Attendance capture (manual UI + bot quick action)
+- Automated Saturday announcement generation (text + OG image) & Telegram posting
+- Attendance trend reports (per unit, per mentor group)
+- Tag integration with Attention Engine (low attendance flag)
+
+### Retreats Module
+
+- Retreat CRUD (schedule blocks, capacity) [future]
+- Participant registration (non-payment first) [future]
+- Payment integration (Stripe or Donorbox) [future]
+- Dietary & accommodation data capture [future]
+- Post-retreat engagement summary + follow-up reminders [future]
+
+### Educational (LMS-lite)
+
+- Course & lesson catalog (markdown) [future]
+- Progress tracking + completion timestamps [future]
+- Mentor dashboard extension: course gaps [future]
+- Content versioning workflow (simple draft/publish) [future]
+
+### Finance & Ledger
+
+- Donation entry import (CSV / API) [future]
+- Retreat income & expense tagging [future]
+- Basic ledger with double-entry or simplified categorized txns (decision pending) [future]
+- Budget vs actual per unit / retreat [future]
+
+### Communication & Announcement Engine
+
+- Template system (handlebars / React OG image) [future]
+- Multi-channel dispatch (Telegram, email) [future]
+- Scheduling & idempotent job execution [future]
+- Analytics (open / click / engagement) [far-future]
+
 ## Labels (Proposed)
 
 | Label            | Meaning                           |

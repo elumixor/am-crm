@@ -10,6 +10,7 @@
 - Structured lesson & initiation history.
 - Gentle reminder & contact rhythm.
 - Foundation for future educational and analytics modules.
+- Extendable platform for collective meditation events, retreats, and transparent finance.
 
 ## 2. Problems / Pain Points
 
@@ -53,6 +54,7 @@ See [User Stories](./user-stories.md) for the exhaustive, tagged list.
 ## 6. Non‑Goals (MVP)
 
 - Full LMS, advanced analytics, payments, multi‑language, microservices.
+	(These appear in long-term roadmap as future modules: educational content, finance ledger, retreats, announcement engine.)
 
 ## 7. Success Metrics (Initial Hypotheses)
 
@@ -63,6 +65,14 @@ See [User Stories](./user-stories.md) for the exhaustive, tagged list.
 ## 8. Open Questions
 
 Tracked via issues labeled `question`.
+
+## 9. Future Modules (High-Level)
+
+- Collective Meditation (DC) Event System – standardize weekly events, tracking & announcements.
+- Retreats – registration, roster management, financial summary.
+- Educational – course content & progress signals.
+- Finance – donations, expenses, budget visibility (lightweight ledger).
+- Announcement Engine – templated multi-channel messaging (Telegram + email) inc. image generation.
 
 ---
 
