@@ -1,0 +1,27 @@
+{
+  "name": "am-crm",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "dotenv -e .env turbo run build",
+    "dev": "dotenv -e .env turbo run dev --parallel",
+    "test": "dotenv -e .env turbo run test",
+    "biome": "biome check",
+    "lint": "biome lint",
+    "format": "biome format --write",
+    "migrate": "dotenv -e .env turbo run migrate",
+    "generate": "dotenv -e .env turbo run generate",
+    "dev:db": "docker compose up -d db"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.2.2",
+    "@types/bun": "latest",
+    "dotenv-cli": "^10.0.0",
+    "turbo": "^2.0.6",
+    "typescript": "^5.4.0"
+  },
+  "packageManager": "bun@1.2.20"
+}

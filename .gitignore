@@ -1,2 +1,14 @@
 wiki
 .vscode/
+node_modules
+dist
+.env
+.env.*
+*.log
+coverage
+*.tsbuildinfo
+.DS_Store
+pnpm-debug.log*
+.turbo/
+.prisma
+.next/
