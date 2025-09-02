@@ -6,16 +6,12 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "dotenv -e .env turbo run build",
-    "dev": "dotenv -e .env turbo run dev --parallel",
-    "test": "dotenv -e .env turbo run test",
-    "biome": "biome check",
+    "dev": "dotenv -e .env -- turbo dev --parallel",
+    "build": "turbo build",
+    "test": "dotenv -e .env -- turbo test",
+    "test:ci": "dotenv -e .env -- turbo run test --only",
     "lint": "biome lint",
-    "format": "biome format --write",
-    "migrate": "dotenv -e .env turbo run migrate",
-    "migrate:deploy": "dotenv -e .env turbo run migrate:deploy",
-    "generate": "dotenv -e .env turbo run generate",
-    "dev:db": "docker compose up -d db"
+    "format": "biome format --write"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.2.2",

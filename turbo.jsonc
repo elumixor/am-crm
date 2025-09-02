@@ -1,0 +1,16 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalEnv": ["DATABASE_URL"],
+  "tasks": {
+    // Spins up database in a docker image
+    "db:up": { "cache": false, "outputs": [] },
+    // Runs database migrations
+    "db:migrate": { "dependsOn": ["db:up"], "cache": false, "outputs": [] },
+    // Runs dev commands in all packages (basically api (back-end) and web (front-end))
+    "dev": { "dependsOn": ["db:migrate"], "cache": false, "outputs": [] },
+    // Builds everything
+    "build": { "dependsOn": ["^build"], "outputs": ["dist/**"] },
+    // Tests everything
+    "test": { "dependsOn": ["^build", "db:migrate"], "outputs": [] }
+  }
+}

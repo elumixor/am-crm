@@ -2,18 +2,89 @@ name: CI & Deploy Bun API
 
 on:
   push:
-    branches:
-      - main
 
-env:
-  DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
+# We run linting, testing, and building in parallel
+# if all jobs succeed, then we deploy
 jobs:
-  build_test:
-    name: Lint / Test / Build
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # We don't need a database for prisma generation, but we need to set the DATABASE_URL
+      # prisma generate does NOT need a live database.
+      # It reads schema.prisma, resolves generators, downloads engines if needed, and writes the client.
+      # It only needs DATABASE_URL for certain edge cases (e.g., some generators reading datasource config)
+      # but it won’t connect or validate schema against the database.
+      # Missing or unreachable DB won’t break generate
+      # unless the env var is entirely absent and you reference it (Prisma just reads the string).
+      - name: Generate Prisma client
+        run: DATABASE_URL=${{ secrets.DATABASE_URL }} bunx prisma generate --schema packages/db/prisma/schema.prisma
+
+      - name: Lint
+        run: bun run lint
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    # We use a Postgres service for tests
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: am-crm-test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Generate Prisma client
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/am-crm-test
+        run: bunx prisma generate --schema packages/db/prisma/schema.prisma
+
+      - name: Apply database migrations
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/am-crm-test
+        run: bunx prisma migrate deploy --schema packages/db/prisma/schema.prisma
+
+      - name: Run tests (CI without docker-compose db:up)
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/am-crm-test
+        run: bun run test:ci
+
+  build:
+    name: Build
     runs-on: ubuntu-latest
     outputs:
       image_tag: ${{ steps.meta.outputs.image_tag }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -36,20 +107,11 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Create .env file
-        run: echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
-
       - name: Generate Prisma client
-        run: bunx turbo run generate
-
-      - name: Lint
-        run: bun run lint
-
-      # - name: Test
-      #   run: bun run test
+        run: DATABASE_URL=${{ secrets.DATABASE_URL }} bunx prisma generate --schema packages/db/prisma/schema.prisma
 
       - name: Build (all workspaces)
-        run: bunx turbo run build
+        run: bun run build
 
       - name: Package build artifacts
         run: |
@@ -78,10 +140,9 @@ jobs:
 
   deploy:
     name: Deploy
-    needs: build_test
+    needs: [lint, test, build]
     runs-on: ubuntu-latest
-    env:
-      IMAGE_TAG: ${{ needs.build_test.outputs.image_tag }}
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout code (for Docker context)
         uses: actions/checkout@v4
@@ -90,6 +151,11 @@ jobs:
         uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          install: true
 
       - name: Cache Bun packages
         uses: actions/cache@v4
@@ -116,11 +182,8 @@ jobs:
           if [ -d ci-artifacts/packages/api/dist ]; then rm -rf packages/api/dist && mkdir -p packages/api && cp -R ci-artifacts/packages/api/dist packages/api/; fi
           if [ -d ci-artifacts/node_modules/.prisma ]; then mkdir -p node_modules && cp -R ci-artifacts/node_modules/.prisma node_modules/; fi
 
-      - name: Create .env file
-        run: echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
-
       - name: Run Prisma migrations
-        run: bunx prisma migrate deploy --schema packages/db/prisma/schema.prisma
+        run: DATABASE_URL=${{ secrets.DATABASE_URL }} bunx prisma migrate deploy --schema packages/db/prisma/schema.prisma
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -134,14 +197,16 @@ jobs:
           aws ecr get-login-password --region ${{ vars.AWS_REGION }} \
             | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com
 
-      - name: Build Docker image (reuse dist)
-        run: |
-          docker buildx build --platform linux/arm64 \
-            -t ${{ vars.ECR_REPO }} -f packages/api/Dockerfile .
-          docker tag ${{ vars.ECR_REPO }}:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPO }}:${IMAGE_TAG}
-
-      - name: Push Docker image to ECR
-        run: docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPO }}:${IMAGE_TAG}
+      - name: Build and push Docker image (with cache)
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: packages/api/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPO }}:${{ needs.build.outputs.image_tag }}
+          cache-from: type=registry,ref=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPO }}:cache
+          cache-to: type=registry,ref=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPO }}:cache,mode=max
 
       - name: Deploy to ECS
         run: |

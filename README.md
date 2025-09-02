@@ -1,5 +1,7 @@
 # Ananda Marga CRM & Mentorship Platform
 
+[![CI & Deploy Bun API](https://github.com/elumixor/am-crm/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/elumixor/am-crm/actions/workflows/ci.yml)
+
 > Central platform to support spiritual progress tracking, mentorship, unit visibility, and initiation journey inside Ananda Marga.
 
 ## Overview

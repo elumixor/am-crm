@@ -3,9 +3,9 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "migrate": "prisma migrate dev --name init",
-    "migrate:deploy": "prisma migrate deploy",
-    "generate": "prisma generate",
+    "db:up": "docker compose -f ./docker-compose.yml up -d db",
+    "db:migrate": "prisma migrate dev --name init",
+    "db:generate": "prisma generate",
     "test": "bun test"
   },
   "dependencies": {
