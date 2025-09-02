@@ -2,6 +2,9 @@ name: CI & Deploy Bun API
 
 on:
   push:
+    # Exclude docs-only branch updates from triggering full CI
+    branches-ignore:
+      - docs
 
 # We run linting, testing, and building in parallel
 # if all jobs succeed, then we deploy
