@@ -1,17 +1,22 @@
-import {
-  helloShared,
-  type User as UserDTO,
-  type Unit as UnitDTO,
-  type CreateUserPayload,
-  type UpdateUserPayload,
-  type CreateUnitPayload,
-  type UpdateUnitPayload,
-  type AddTraitPayload,
-  type AddMemberPayload,
-  type UserTrait as UserTraitDTO,
-  type UnitMembership as UnitMembershipDTO,
+import type {
+  AddMemberPayload,
+  AddTraitPayload,
+  CreateUnitPayload,
+  CreateUserPayload,
+  Unit as UnitDTO,
+  UnitMembership as UnitMembershipDTO,
+  UpdateUnitPayload,
+  UpdateUserPayload,
+  User as UserDTO,
+  UserTrait as UserTraitDTO,
 } from "@am-crm/shared";
-import { PrismaClient, type User as PrismaUser, type UserTrait as PrismaUserTrait, type UnitMembership as PrismaUnitMembership, type Unit as PrismaUnit } from "@prisma/client";
+import {
+  PrismaClient,
+  type Unit as PrismaUnit,
+  type UnitMembership as PrismaUnitMembership,
+  type User as PrismaUser,
+  type UserTrait as PrismaUserTrait,
+} from "@prisma/client";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 
@@ -43,7 +48,7 @@ app.use(
   }),
 );
 
-app.get("/", (c) => c.json({ ok: true, msg: helloShared() }));
+app.get("/", (c) => c.json({ ok: true }));
 
 // Lightweight health / liveness endpoint (no DB dependency)
 app.get("/health", (c) => c.json({ status: "ok" }));
@@ -63,7 +68,7 @@ const mapMembership = (m: PrismaUnitMembership): UnitMembershipDTO => ({
   unitId: m.unitId,
   role: m.role,
 });
-// Include() expansions typed as PrismaUser & { traits: PrismaUserTrait[]; memberships: PrismaUnitMembership[] }
+
 const mapUser = (u: PrismaUser & { traits?: PrismaUserTrait[]; memberships?: PrismaUnitMembership[] }): UserDTO => ({
   id: u.id,
   createdAt: u.createdAt.toISOString(),
@@ -72,6 +77,7 @@ const mapUser = (u: PrismaUser & { traits?: PrismaUserTrait[]; memberships?: Pri
   traits: (u.traits ?? []).map(mapTrait),
   memberships: (u.memberships ?? []).map(mapMembership),
 });
+
 const mapUnit = (u: PrismaUnit & { memberships?: PrismaUnitMembership[] }): UnitDTO => ({
   id: u.id,
   createdAt: u.createdAt.toISOString(),

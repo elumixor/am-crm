@@ -1,9 +1,9 @@
 "use client";
 
+import type { CreateUserPayload, RequiredFull, User } from "@am-crm/shared";
 import { useCallback, useEffect, useId, useState } from "react";
-import type { User, CreateUserPayload } from "@am-crm/shared";
 
-type UserFormData = Required<Pick<CreateUserPayload, "email">> & { name: string };
+type UserFormData = RequiredFull<CreateUserPayload>;
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -17,7 +17,8 @@ export default function UsersPage() {
   const emailId = useId();
   const nameId = useId();
 
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL;
+  if (!apiBase) throw new Error("API_BASE_URL is not defined");
 
   // Fetch users
   const fetchUsers = useCallback(async () => {
@@ -208,7 +209,7 @@ export default function UsersPage() {
                 <input
                   id={nameId}
                   type="text"
-                  value={formData.name}
+                  value={formData.name ?? ""}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   style={{
                     width: "100%",
