@@ -33,7 +33,9 @@ jobs:
       # Missing or unreachable DB won’t break generate
       # unless the env var is entirely absent and you reference it (Prisma just reads the string).
       - name: Generate Prisma client
-        run: DATABASE_URL=${{ secrets.DATABASE_URL }} bunx prisma generate --schema packages/db/prisma/schema.prisma
+        run: bunx prisma generate --schema packages/db/prisma/schema.prisma
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Lint
         run: bun run lint
@@ -111,10 +113,15 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Generate Prisma client
-        run: DATABASE_URL=${{ secrets.DATABASE_URL }} bunx prisma generate --schema packages/db/prisma/schema.prisma
+        run: bunx prisma generate --schema packages/db/prisma/schema.prisma
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Build (all workspaces)
         run: bun run build
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
 
       - name: Package build artifacts
         run: |

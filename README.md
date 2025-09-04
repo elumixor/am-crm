@@ -132,6 +132,37 @@ Next steps candidates:
 - Add domain core package & logging.
 - Convert current SSR Hono-based web server into full Next.js app (future step).
 
+## Vercel Deployment
+
+The `packages/web` Next.js app is deployed via a dedicated GitHub Action workflow (`.github/workflows/vercel.yml`).
+
+Secrets required in the repo settings (Actions > Secrets):
+
+| Name                | Purpose                                          |
+| ------------------- | ------------------------------------------------ |
+| `VERCEL_TOKEN`      | Personal/team Vercel token with deploy scope     |
+| `VERCEL_ORG_ID`     | Your Vercel organization ID                      |
+| `VERCEL_PROJECT_ID` | The Vercel project ID for this web app           |
+| `DATABASE_URL`      | Passed as build env for Prisma client generation |
+
+Behavior:
+
+- Pull Requests touching `packages/web` (or shared deps) create/refresh a Preview deployment.
+- Merges to `main` deploy to Production (`--prod`).
+- We run a local build first with Bun to fail fast before invoking Vercel deploy (helps surface type / prisma errors earlier).
+- Direct Vercel Git auto-deploys are disabled (`vercel.json` sets `git.deploymentEnabled=false`) so GitHub Actions is the source of truth.
+
+Local production build parity test:
+
+```
+cd packages/web
+bun install
+DATABASE_URL="postgresql://..." bunx prisma generate --schema ../db/prisma/schema.prisma
+bun run build
+```
+
+If you add new env vars required at build time, append them to the `vercel-args --build-env` section of the workflow.
+
 ## Long-Term Feature Horizons (Future / Vision)
 
 These are NOT in scope for current MVP phases, but guide architectural decisions:
