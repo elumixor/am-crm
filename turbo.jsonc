@@ -1,6 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalEnv": ["DATABASE_URL", "API_BASE_URL"],
+  "globalEnv": ["DATABASE_URL", "API_BASE_URL", "LOCAL_FRONTEND_URL", "VERCEL_PROD_URL", "VERCEL_DEV_URL"],
   "tasks": {
     // Spins up database in a docker image
     "db:up": { "cache": false, "outputs": [] },

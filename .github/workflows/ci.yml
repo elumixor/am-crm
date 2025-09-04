@@ -93,6 +93,8 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          VERCEL_DEV_URL: ${{ vars.VERCEL_DEV_URL }}
+          VERCEL_PROD_URL: ${{ vars.VERCEL_PROD_URL }}
 
       - name: Package build artifacts
         run: |
