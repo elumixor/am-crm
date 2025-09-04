@@ -1,4 +1,4 @@
-name: CI & Deploy Bun API
+name: CI & Deploy (Modular)
 
 on:
   push:
@@ -9,87 +9,58 @@ on:
 # We run linting, testing, and building in parallel
 # if all jobs succeed, then we deploy
 jobs:
-  lint:
-    name: Lint
+  detect_changes:
+    name: Detect Changes
     runs-on: ubuntu-latest
-
+    outputs:
+      src: ${{ steps.changes.outputs.src }}
+      db: ${{ steps.changes.outputs.db }}
+      api: ${{ steps.changes.outputs.api }}
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+      - name: Paths filter
+        id: changes
+        uses: dorny/paths-filter@v3
         with:
-          bun-version: latest
+          token: ${{ secrets.GITHUB_TOKEN }}
+          filters: |
+            src:
+              - 'packages/**'
+              - 'index.ts'
+              - 'package.json'
+              - 'tsconfig.json'
+              - 'turbo.jsonc'
+              - 'biome.jsonc'
+              - '.github/workflows/**'
+              - '!docs/**'
+            db:
+              - 'packages/db/prisma/**'
+              - 'packages/db/src/**'
+              - 'packages/db/package.json'
+              - 'packages/db/tsconfig.json'
+            api:
+              - 'packages/api/**'
+              - 'packages/shared/**'
+              - 'packages/db/prisma/schema.prisma'
+              - 'packages/db/prisma/migrations/**'
+              - 'packages/api/package.json'
+              - 'packages/api/tsconfig.json'
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
-
-      # We don't need a database for prisma generation, but we need to set the DATABASE_URL
-      # prisma generate does NOT need a live database.
-      # It reads schema.prisma, resolves generators, downloads engines if needed, and writes the client.
-      # It only needs DATABASE_URL for certain edge cases (e.g., some generators reading datasource config)
-      # but it won’t connect or validate schema against the database.
-      # Missing or unreachable DB won’t break generate
-      # unless the env var is entirely absent and you reference it (Prisma just reads the string).
-      - name: Generate Prisma client
-        run: bunx prisma generate --schema packages/db/prisma/schema.prisma
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
-      - name: Lint
-        run: bun run lint
-
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-
-    # We use a Postgres service for tests
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: am-crm-test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 5
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
-
-      - name: Generate Prisma client
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/am-crm-test
-        run: bunx prisma generate --schema packages/db/prisma/schema.prisma
-
-      - name: Apply database migrations
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/am-crm-test
-        run: bunx prisma migrate deploy --schema packages/db/prisma/schema.prisma
-
-      - name: Run tests (CI without docker-compose db:up)
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/am-crm-test
-        run: bun run test:ci
+      - name: Show decisions
+        run: |
+          echo "src changed? ${{ steps.changes.outputs.src }}"
+          echo "db changed?  ${{ steps.changes.outputs.db }}"
+          echo "api changed? ${{ steps.changes.outputs.api }}"
 
   build:
     name: Build
+    needs: detect_changes
+    if: needs.detect_changes.outputs.src == 'true'
     runs-on: ubuntu-latest
     outputs:
       image_tag: ${{ steps.meta.outputs.image_tag }}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -112,7 +83,7 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Generate Prisma client
+      - name: Generate Prisma client (build stage)
         run: bunx prisma generate --schema packages/db/prisma/schema.prisma
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -126,13 +97,12 @@ jobs:
       - name: Package build artifacts
         run: |
           mkdir -p ci-artifacts
-          # API dist & prisma engines
           if [ -d packages/api/dist ]; then mkdir -p ci-artifacts/packages/api && cp -R packages/api/dist ci-artifacts/packages/api/; fi
           if [ -d node_modules/.prisma ]; then mkdir -p ci-artifacts/node_modules && cp -R node_modules/.prisma ci-artifacts/node_modules/; fi
-          # Shared / bot / web dist (optional diagnostics)
           for pkg in shared telegram-bot web; do
             if [ -d packages/$pkg/dist ]; then mkdir -p ci-artifacts/packages/$pkg && cp -R packages/$pkg/dist ci-artifacts/packages/$pkg/; fi
           done
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -143,30 +113,104 @@ jobs:
       - name: Derive image tag
         id: meta
         run: |
-          # Use provided IMAGE_TAG var if set, else short sha
           TAG="${{ vars.IMAGE_TAG }}"
           if [ -z "$TAG" ]; then TAG=${GITHUB_SHA::12}; fi
           echo "image_tag=$TAG" >> $GITHUB_OUTPUT
 
-  deploy:
-    name: Deploy
-    needs: [lint, test, build]
+  lint:
+    name: Lint
+    needs: build
+    if: needs.build.result == 'success'
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
     steps:
-      - name: Checkout code (for Docker context)
+      - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Setup Bun (for potential scripts)
+      - name: Setup Bun
         uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Generate Prisma client
+        run: bunx prisma generate --schema packages/db/prisma/schema.prisma
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - name: Lint
+        run: bun run lint
 
+  test:
+    name: Test
+    needs: build
+    if: needs.build.result == 'success'
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: am-crm-test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Generate Prisma client
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/am-crm-test
+        run: bunx prisma generate --schema packages/db/prisma/schema.prisma
+      - name: Apply database migrations
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/am-crm-test
+        run: bunx prisma migrate deploy --schema packages/db/prisma/schema.prisma
+      - name: Run tests (CI without docker-compose db:up)
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/am-crm-test
+        run: bun run test:ci
+
+  deploy_db:
+    name: Deploy DB (migrations)
+    needs: [detect_changes, build]
+    if: github.ref == 'refs/heads/main' && needs.build.result == 'success' && needs.detect_changes.outputs.db == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - name: Install dependencies (for prisma migrate)
+        run: bun install --frozen-lockfile
+      - name: Run Prisma migrations
+        run: bunx prisma migrate deploy --schema packages/db/prisma/schema.prisma
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+  deploy_api:
+    name: Deploy API
+    needs: [detect_changes, build, lint, test]
+    if: github.ref == 'refs/heads/main' && needs.build.result == 'success' && needs.detect_changes.outputs.api == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code (for Docker context)
+        uses: actions/checkout@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
           install: true
-
       - name: Cache Bun packages
         uses: actions/cache@v4
         with:
@@ -176,37 +220,31 @@ jobs:
           key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
           restore-keys: |
             ${{ runner.os }}-bun-
-
       - name: Install dependencies (needed for prisma migrate)
         run: bun install --frozen-lockfile
-
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           name: build-dist
           path: .
-
       - name: Rehydrate build artifacts into repo paths
         run: |
-          # Place dist directories where Dockerfile expects them
           if [ -d ci-artifacts/packages/api/dist ]; then rm -rf packages/api/dist && mkdir -p packages/api && cp -R ci-artifacts/packages/api/dist packages/api/; fi
           if [ -d ci-artifacts/node_modules/.prisma ]; then mkdir -p node_modules && cp -R ci-artifacts/node_modules/.prisma node_modules/; fi
-
-      - name: Run Prisma migrations
-        run: DATABASE_URL=${{ secrets.DATABASE_URL }} bunx prisma migrate deploy --schema packages/db/prisma/schema.prisma
-
+      - name: Run Prisma migrations (safety if schema changed)
+        run: bunx prisma migrate deploy --schema packages/db/prisma/schema.prisma
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
-
       - name: Log in to ECR
         run: |
           aws ecr get-login-password --region ${{ vars.AWS_REGION }} \
             | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com
-
       - name: Build and push Docker image (with cache)
         uses: docker/build-push-action@v4
         with:
@@ -217,7 +255,6 @@ jobs:
           tags: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPO }}:${{ needs.build.outputs.image_tag }}
           cache-from: type=registry,ref=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPO }}:cache
           cache-to: type=registry,ref=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPO }}:cache,mode=max
-
       - name: Deploy to ECS
         run: |
           aws ecs update-service \
