@@ -7,8 +7,10 @@ Central documentation hub for the Ananda Marga CRM & Mentorship Platform.
 - [Vision & Context](./project-vision.md)
 - [User Stories](./user-stories.md)
 - [Architecture Overview](./architecture.md)
+- [Front-End Architecture & Pages](./frontend-architecture.md)
 - [Data Model](./data-model.md)
 - [Roadmap](./roadmap.md)
+- [Public API](./public-api.md)
 
 ## GitHub Pages
 

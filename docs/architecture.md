@@ -14,7 +14,7 @@ Monolith-first Next.js (App Router) + shared PostgreSQL database accessed by web
 | Component       | Responsibility                               | Tech                             |
 | --------------- | -------------------------------------------- | -------------------------------- |
 | Web UI          | Pages, dashboards, forms                     | Next.js (React, Tailwind, Radix) |
-| API Layer       | tRPC procedures / route handlers             | tRPC + Zod                       |
+| API Layer       | route handlers                               |                                  |
 | Auth            | Sessions, email magic link, Telegram linking | Auth.js                          |
 | DB              | Persistence                                  | PostgreSQL + Prisma              |
 | Bot             | Messaging, quick actions, reminders          | grammY (TypeScript)              |
