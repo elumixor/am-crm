@@ -22,7 +22,7 @@ model User {
 model UserTrait {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
   trait     String
 
@@ -46,9 +46,9 @@ enum UnitRole {
 model UnitMembership {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
-  unit      Unit     @relation(fields: [unitId], references: [id])
+  unit      Unit     @relation(fields: [unitId], references: [id], onDelete: Cascade)
   unitId    String
   role      UnitRole @default(MEMBER)
 
