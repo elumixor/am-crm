@@ -1,13 +1,16 @@
 "use client";
 
 import type { CreateUserPayload, User } from "@am-crm/shared";
+import Link from "next/link";
 import { useCallback, useEffect, useId, useState } from "react";
+import { EntityChip } from "../../components/EntityChip";
 
 type UserFormData = CreateUserPayload;
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [units, setUnits] = useState<{ id: string; name: string }[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -33,6 +36,13 @@ export default function UsersPage() {
     } finally {
       setLoading(false);
     }
+  }, [apiBase]);
+
+  const fetchUnits = useCallback(async () => {
+    try {
+      const res = await fetch(`${apiBase}/units`);
+      if (res.ok) setUnits(await res.json());
+    } catch {}
   }, [apiBase]);
 
   // Create user
@@ -116,7 +126,8 @@ export default function UsersPage() {
 
   useEffect(() => {
     fetchUsers();
-  }, [fetchUsers]);
+    fetchUnits();
+  }, [fetchUsers, fetchUnits]);
 
   return (
     <div style={{ fontFamily: "system-ui", padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
@@ -258,8 +269,7 @@ export default function UsersPage() {
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ backgroundColor: "#f8f9fa" }}>
-                <th style={{ padding: "12px", textAlign: "left", borderBottom: "1px solid #dee2e6" }}>Email</th>
-                <th style={{ padding: "12px", textAlign: "left", borderBottom: "1px solid #dee2e6" }}>Display</th>
+                <th style={{ padding: "12px", textAlign: "left", borderBottom: "1px solid #dee2e6" }}>User</th>
                 <th style={{ padding: "12px", textAlign: "left", borderBottom: "1px solid #dee2e6" }}>Unit</th>
                 <th style={{ padding: "12px", textAlign: "left", borderBottom: "1px solid #dee2e6" }}>Mentor</th>
                 <th style={{ padding: "12px", textAlign: "left", borderBottom: "1px solid #dee2e6" }}>Mentees</th>
@@ -267,49 +277,98 @@ export default function UsersPage() {
               </tr>
             </thead>
             <tbody>
-              {users.map((user) => (
-                <tr key={user.id} style={{ borderBottom: "1px solid #dee2e6" }}>
-                  <td style={{ padding: "12px" }}>{user.email}</td>
-                  <td style={{ padding: "12px" }}>{user.displayName || user.spiritualName || user.fullName || "-"}</td>
-                  <td style={{ padding: "12px" }}>{user.unitId || "-"}</td>
-                  <td style={{ padding: "12px" }}>{user.mentorId || "-"}</td>
-                  <td style={{ padding: "12px" }}>{user.menteeIds?.length ?? 0}</td>
-                  <td style={{ padding: "12px", textAlign: "center" }}>
-                    <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
-                      <button
-                        type="button"
-                        onClick={() => handleEdit(user)}
-                        style={{
-                          padding: "4px 8px",
-                          backgroundColor: "#ffc107",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                          fontSize: "12px",
-                        }}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(user)}
-                        style={{
-                          padding: "4px 8px",
-                          backgroundColor: "#dc3545",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                          fontSize: "12px",
-                        }}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {users.map((user) => {
+                const unit = units.find((u) => u.id === user.unitId);
+                const unitLabel = unit ? unit.name : user.unitId || "-";
+                const display = user.displayName || user.spiritualName || user.fullName || "-";
+                return (
+                  <tr key={user.id} style={{ borderBottom: "1px solid #dee2e6" }}>
+                    <td style={{ padding: "12px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <Link href={`/users/${user.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                          <div
+                            style={{
+                              width: 36,
+                              height: 36,
+                              borderRadius: "50%",
+                              backgroundImage: user.photoUrl ? `url(${user.photoUrl})` : "url(/images/user.png)",
+                              backgroundSize: "cover",
+                              backgroundPosition: "center",
+                              border: "1px solid #ccc",
+                              flexShrink: 0,
+                            }}
+                          />
+                        </Link>
+                        <div style={{ display: "grid" }}>
+                          <Link href={`/users/${user.id}`} style={{ color: "#0366d6", textDecoration: "none" }}>
+                            {display}
+                          </Link>
+                          <span style={{ fontSize: 12, color: "#555" }}>{user.email}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td style={{ padding: "12px" }}>
+                      {user.unitId && unit ? (
+                        <EntityChip id={unit.id} type="unit" name={unitLabel} href={`/units/${unit.id}`} />
+                      ) : (
+                        <span style={{ color: "#999" }}>-</span>
+                      )}
+                    </td>
+                    <td style={{ padding: "12px" }}>
+                      {(() => {
+                        if (!user.mentorId) return "-";
+                        const mentor = users.find((u) => u.id === user.mentorId);
+                        return mentor ? (
+                          <EntityChip
+                            id={mentor.id}
+                            type="user"
+                            name={mentor.displayName || mentor.spiritualName || mentor.email}
+                            href={`/users/${mentor.id}`}
+                            photoUrl={mentor.photoUrl || undefined}
+                          />
+                        ) : (
+                          user.mentorId
+                        );
+                      })()}
+                    </td>
+                    <td style={{ padding: "12px" }}>{user.menteeIds?.length ?? 0}</td>
+                    <td style={{ padding: "12px", textAlign: "center" }}>
+                      <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
+                        <button
+                          type="button"
+                          onClick={() => handleEdit(user)}
+                          style={{
+                            padding: "4px 8px",
+                            backgroundColor: "#ffc107",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontSize: "12px",
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(user)}
+                          style={{
+                            padding: "4px 8px",
+                            backgroundColor: "#dc3545",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontSize: "12px",
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

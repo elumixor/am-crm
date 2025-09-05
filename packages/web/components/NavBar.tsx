@@ -10,6 +10,7 @@ export default function NavBar() {
       {!token && <a href="/register">Register</a>}
       {token && <a href="/profile">My Profile</a>}
       {<a href="/users">Users</a>}
+      {<a href="/units">Units</a>}
       {token && (
         <button type="button" onClick={logout} style={{ marginLeft: "auto" }}>
           Logout

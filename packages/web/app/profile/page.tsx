@@ -2,6 +2,8 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../components/AuthContext";
+import { ChipsSelector } from "../../components/ChipsSelector";
+import { EntityChip } from "../../components/EntityChip";
 import { nonNullAssert } from "@elumixor/frontils";
 
 interface User {
@@ -51,7 +53,6 @@ export default function ProfilePage() {
   const [units, setUnits] = useState<Unit[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [saving, setSaving] = useState(false);
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false); // NEW
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -94,7 +95,6 @@ export default function ProfilePage() {
         const { url } = (await res.json()) as { url: string };
         nonNullAssert(url);
         setUser((u) => (u ? { ...u, photoUrl: url } : u));
-        setPhotoFile(file);
       }
     } finally {
       setUploadingPhoto(false);
@@ -182,6 +182,15 @@ export default function ProfilePage() {
                   ))}
                 </select>
               </label>
+              {user.unitId ? (
+                <EntityChip
+                  id={user.unitId}
+                  type="unit"
+                  name={units.find((u) => u.id === user.unitId)?.name || ""}
+                  href={`/units/${user.unitId}`}
+                  onRemove={() => updateField("unitId", null)}
+                />
+              ) : undefined}
               <label style={{ display: "grid", gap: 4 }}>
                 <span style={{ fontSize: 12, fontWeight: 600 }}>Mentor</span>
                 <select value={user.mentorId || ""} onChange={(e) => updateField("mentorId", e.target.value || null)}>
@@ -195,12 +204,32 @@ export default function ProfilePage() {
                     ))}
                 </select>
               </label>
-              <MenteesSelector
-                users={users}
-                selfId={user.id}
-                menteeIds={user.menteeIds}
-                onChange={(ids: string[]) => updateField("menteeIds", ids)}
-              />
+              {user.mentorId ? (
+                <EntityChip
+                  id={user.mentorId}
+                  type="user"
+                  href={`/users/${user.mentorId}`}
+                  name={(() => {
+                    const mentorUser = users.find((u) => u.id === user.mentorId);
+                    return mentorUser?.displayName ?? mentorUser?.email ?? mentorUser?.id ?? "";
+                  })()}
+                  onRemove={() => updateField("mentorId", null)}
+                />
+              ) : undefined}
+              <div style={{ display: "grid", gap: 4 }}>
+                <span style={{ fontSize: 12, fontWeight: 600 }}>Mentees</span>
+                <ChipsSelector
+                  selectedIds={user.menteeIds}
+                  items={users
+                    .filter((u) => u.id !== user.id)
+                    .map((u) => ({
+                      id: u.id,
+                      label: u.displayName || u.spiritualName || u.email,
+                      href: `/users/${u.id}`,
+                    }))}
+                  onChange={(ids) => updateField("menteeIds", ids)}
+                />
+              </div>
               <div style={{ display: "flex", gap: 12 }}>
                 <button type="button" onClick={save} disabled={saving}>
                   {saving ? "Saving..." : "Save"}
@@ -258,79 +287,4 @@ export default function ProfilePage() {
   );
 }
 
-interface MenteesSelectorProps {
-  users: User[];
-  selfId: string;
-  menteeIds: string[];
-  onChange: (ids: string[]) => void;
-}
-
-function MenteesSelector({ users, selfId, menteeIds, onChange }: MenteesSelectorProps) {
-  const [query, setQuery] = useState("");
-  const selectable = users.filter((u) => u.id !== selfId && !menteeIds.includes(u.id));
-  const filtered = !query
-    ? selectable
-    : selectable.filter((u) =>
-        (u.displayName || u.spiritualName || u.email).toLowerCase().includes(query.toLowerCase()),
-      );
-
-  return (
-    <div style={{ display: "grid", gap: 4 }}>
-      <span style={{ fontSize: 12, fontWeight: 600 }}>Mentees</span>
-      <div style={{ display: "flex", gap: 8 }}>
-        <input
-          placeholder="Search user..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          style={{ flex: 1 }}
-        />
-        <select
-          value=""
-          onChange={(e) => {
-            const id = e.target.value;
-            if (!id) return;
-            onChange([...menteeIds, id]);
-            setQuery("");
-          }}
-        >
-          <option value="">Add...</option>
-          {filtered.map((u) => (
-            <option key={u.id} value={u.id}>
-              {u.displayName || u.spiritualName || u.email}
-            </option>
-          ))}
-        </select>
-      </div>
-      {menteeIds.length > 0 && (
-        <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {menteeIds.map((id) => {
-            const u = users.find((x) => x.id === id);
-            return (
-              <li
-                key={id}
-                style={{
-                  background: "#eef",
-                  padding: "4px 8px",
-                  borderRadius: 12,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 4,
-                  fontSize: 12,
-                }}
-              >
-                <span>{u ? u.displayName || u.spiritualName || u.email : id}</span>
-                <button
-                  type="button"
-                  style={{ background: "transparent", border: "none", cursor: "pointer" }}
-                  onClick={() => onChange(menteeIds.filter((x) => x !== id))}
-                >
-                  ✕
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </div>
-  );
-}
+// (MenteesSelector replaced with generic ChipsSelector)

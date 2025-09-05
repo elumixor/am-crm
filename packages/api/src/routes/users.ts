@@ -5,8 +5,19 @@ import { mapTrait, mapUser } from "../utils/mappers";
 export const registerUserRoutes = (app: App) => {
   // Users CRUD
   app.get("/users", async (c) => {
-    const users = await app.prisma.user.findMany({ include: { traits: true } });
+    // Include mentees relation so menteeIds are populated in DTO (frontend relies on this)
+    const users = await app.prisma.user.findMany({ include: { traits: true, mentees: true } });
     return c.json(users.map(mapUser));
+  });
+
+  app.get("/users/:id", async (c) => {
+    const id = c.req.param("id");
+    const user = await app.prisma.user.findUnique({
+      where: { id },
+      include: { traits: true, mentees: true },
+    });
+    if (!user) return c.text("not found", 404);
+    return c.json(mapUser(user));
   });
 
   app.post("/users", async (c) => {
