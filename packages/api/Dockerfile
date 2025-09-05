@@ -3,14 +3,6 @@
 FROM oven/bun:1
 WORKDIR /app
 
-# Dependency for healthcheck
-RUN apt-get update && apt-get install -y curl
-
-# Set-up healthcheck
-COPY packages/api/healthcheck .
-RUN chmod +x healthcheck
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 CMD ./healthcheck || exit 1
-
 # Expose API port
 EXPOSE 3001
 
