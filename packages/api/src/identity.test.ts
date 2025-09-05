@@ -20,7 +20,7 @@ describe("Identity & Units API", () => {
   it("creates user, unit, membership, trait", async () => {
     const uRes = await fetch(`http://localhost:${apiServer.port}/users`, {
       method: "POST",
-      body: JSON.stringify({ email: "phase1@example.com", name: "Phase One" }),
+      body: JSON.stringify({ email: "phase1@example.com" }),
       headers: { "content-type": "application/json" },
     });
     if (uRes.status !== 201) return; // silent skip on failure

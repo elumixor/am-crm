@@ -11,7 +11,9 @@
     "test": "dotenv -e .env -- turbo test",
     "test:ci": "dotenv -e .env -- turbo run test --only",
     "lint": "biome lint",
-    "format": "biome format --write"
+    "format": "biome format --write",
+    "migrate": "dotenv -e .env -- turbo db:migrate",
+    "generate": "dotenv -e .env -- turbo db:generate"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.2.2",

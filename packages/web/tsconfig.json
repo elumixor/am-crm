@@ -6,11 +6,15 @@
     "strict": true,
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    },
     "plugins": [
       {
         "name": "next"
       }
     ]
   },
-  "include": ["app", "testing", ".next/types/**/*.ts"]
+  "include": ["app", "components", "testing", ".next/types/**/*.ts"]
 }
