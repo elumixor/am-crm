@@ -18,7 +18,7 @@ interface Membership {
   role: string;
 }
 
-const apiBase = process.env.API_BASE_URL;
+const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL;
 if (!apiBase) throw new Error("API_BASE_URL is not defined");
 
 export default function IdentityPage() {

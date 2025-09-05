@@ -11,47 +11,59 @@ datasource db {
 }
 
 model User {
-  id          String           @id @default(cuid())
-  createdAt   DateTime         @default(now())
-  email       String           @unique
-  name        String?
-  traits      UserTrait[]
-  memberships UnitMembership[]
+  id           String  @id @default(cuid())
+  email        String  @unique
+  // Authentication
+  passwordHash String?
+
+  // Profile fields
+  fullName          String?
+  spiritualName     String?
+  displayName       String?
+  telegramHandle    String?
+  whatsapp          String?
+  photoUrl          String?
+  dateOfBirth       DateTime?
+  nationality       String?
+  languages         String?
+  location          String?
+  preferredLanguage String?
+
+  // Primary Unit (single membership)
+  unitId String?
+  unit   Unit?   @relation(fields: [unitId], references: [id])
+
+  // Mentor relation
+  mentorId String?
+  mentor   User?   @relation("Mentorship", fields: [mentorId], references: [id])
+  mentees  User[]  @relation("Mentorship")
+
+  // Acarya relation
+  acaryaId  String?
+  acarya    User?   @relation("Acarya", fields: [acaryaId], references: [id])
+  initiates User[]  @relation("Acarya")
+
+  // Lesson progression stored as JSON array of objects { lesson: Int, receivedAt: DateTime? }
+  lessons Json @default("[]")
+
+  traits UserTrait[]
 }
 
 model UserTrait {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  trait     String
+  id     String @id @default(cuid())
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  trait  String
 
   @@unique([userId, trait])
   @@index([trait])
 }
 
 model Unit {
-  id          String           @id @default(cuid())
-  createdAt   DateTime         @default(now())
-  name        String           @unique
-  description String?
-  memberships UnitMembership[]
-}
-
-enum UnitRole {
-  MEMBER
-  SECRETARY
-}
-
-model UnitMembership {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  unit      Unit     @relation(fields: [unitId], references: [id], onDelete: Cascade)
-  unitId    String
-  role      UnitRole @default(MEMBER)
-
-  @@unique([userId, unitId])
-  @@index([unitId, role])
+  id                     String    @id @default(cuid())
+  name                   String    @unique
+  description            String?
+  unofficialRegisteredAt DateTime?
+  officialRegisteredAt   DateTime?
+  users                  User[]
 }

@@ -1,6 +1,6 @@
 # Public API Documentation (MVP Draft)
 
-_Status: Covers currently implemented REST endpoints in `packages/api`. Future domain endpoints (contact logs, lessons, initiation, attention, auth) will extend this spec or move to tRPC._
+_Status: Updated for refactored single-unit user model, profile (/me) endpoints, lessons JSON array, unit registration dates. Future domain endpoints (contact logs, initiation, attention, auth) will extend this spec or move to tRPC._
 
 Base URL (local dev): `http://localhost:3001`
 
@@ -21,11 +21,25 @@ All responses are JSON unless noted. Timestamps are ISO8601 strings. Currently *
 ```
 {
   id: string,
-  createdAt: string,      // ISO date
   email: string,
-  name: string | null,
-  traits: UserTrait[],
-  memberships: UnitMembership[]
+  fullName: string | null,
+  spiritualName: string | null,
+  displayName: string | null,
+  telegramHandle: string | null,
+  whatsapp: string | null,
+  photoUrl: string | null,
+  dateOfBirth: string | null,        // ISO date
+  nationality: string | null,
+  languages: string | null,          // comma separated or null
+  location: string | null,
+  preferredLanguage: string | null,
+  unitId: string | null,             // single unit membership
+  mentorId: string | null,
+  acaryaId: string | null,
+  lessons: { lesson: number, receivedAt: string | null }[], // ordered 0..6
+  menteeIds: string[],               // users mentored by this user
+  initiateIds: string[],             // users initiated by this user (placeholder)
+  traits: UserTrait[]
 }
 ```
 
@@ -45,22 +59,11 @@ All responses are JSON unless noted. Timestamps are ISO8601 strings. Currently *
 ```
 {
   id: string,
-  createdAt: string,
   name: string,
   description: string | null,
-  memberships: UnitMembership[]
-}
-```
-
-### UnitMembership
-
-```
-{
-  id: string,
-  createdAt: string,
-  userId: string,
-  unitId: string,
-  role: string            // 'MEMBER' | 'SECRETARY' etc.
+  unofficialRegisteredAt: string | null, // ISO
+  officialRegisteredAt: string | null,   // ISO
+  userIds: string[]
 }
 ```
 
@@ -73,14 +76,14 @@ All responses are JSON unless noted. Timestamps are ISO8601 strings. Currently *
 | GET    | `/`       | Liveness root        | 200          |
 | GET    | `/health` | Health check (no DB) | 200          |
 
-### Users
+### Users (legacy basic CRUD; profile-oriented updates via /me)
 
-| Method | Path         | Description                            | Body (Request)                      | Responses                        |
-| ------ | ------------ | -------------------------------------- | ----------------------------------- | -------------------------------- |
-| GET    | `/users`     | List users (with traits & memberships) | –                                   | 200 `[User[]]`                   |
-| POST   | `/users`     | Create user                            | `{ email: string, name?: string }`  | 201 `User` / 400 (missing email) |
-| PUT    | `/users/:id` | Update user fields (email, name)       | `{ email?: string, name?: string }` | 200 `User` / 404                 |
-| DELETE | `/users/:id` | Delete user                            | –                                   | 204 (idempotent)                 |
+| Method | Path         | Description                   | Body (Request)       | Responses                        |
+| ------ | ------------ | ----------------------------- | -------------------- | -------------------------------- |
+| GET    | `/users`     | List users (with traits)      | –                    | 200 `[User[]]`                   |
+| POST   | `/users`     | Create user                   | `{ email: string }`  | 201 `User` / 400 (missing email) |
+| PUT    | `/users/:id` | Update email only (temporary) | `{ email?: string }` | 200 `User` / 404                 |
+| DELETE | `/users/:id` | Delete user                   | –                    | 204 (idempotent)                 |
 
 #### Traits (User Role/Trait Assignment)
 
@@ -110,31 +113,45 @@ curl -X POST http://localhost:3001/users/USER_ID/traits \
 
 ### Units
 
-| Method | Path         | Description                     | Body                                     | Responses        |
-| ------ | ------------ | ------------------------------- | ---------------------------------------- | ---------------- | ---------------- |
-| GET    | `/units`     | List units (with memberships)   | –                                        | 200 `[Unit[]]`   |
-| POST   | `/units`     | Create unit                     | `{ name: string, description?: string }` | 201 `Unit` / 400 |
-| PUT    | `/units/:id` | Update unit (name, description) | `{ name?: string, description?: string   | null }`          | 200 `Unit` / 404 |
-| DELETE | `/units/:id` | Delete unit                     | –                                        | 204              |
+| Method | Path         | Description                     | Body                                      | Responses        |
+| ------ | ------------ | ------------------------------- | ----------------------------------------- | ---------------- |
+| GET    | `/units`     | List units (with userIds)       | –                                         | 200 `[Unit[]]`   |
+| POST   | `/units`     | Create unit                     | `{ name: string, description?: string }`  | 201 `Unit` / 400 |
+| PUT    | `/units/:id` | Update unit (name, description) | `{ name?: string, description?: string }` | 200 `Unit` / 404 |
+| DELETE | `/units/:id` | Delete unit                     | –                                         | 204              |
 
-#### Unit Memberships (Add / List / Remove)
+> Membership management is now implicit: set a user's `unitId` via profile update instead of separate membership endpoints.
 
-(Two perspectives exist; current implementation mixes user & unit focused paths)
+### Profile (/me)
 
-| Method | Path                             | Description                             | Body                                | Responses                  |
-| ------ | -------------------------------- | --------------------------------------- | ----------------------------------- | -------------------------- |
-| POST   | `/units/:id/members`             | Upsert membership (assign user to unit) | `{ userId: string, role?: string }` | 201 `UnitMembership` / 400 |
-| GET    | `/units/:id/members`             | List members (includes user basic)      | –                                   | 200 `[UnitMembership[]]`   |
-| DELETE | `/units/:unitId/members/:userId` | Remove membership                       | –                                   | 204                        |
+Authenticated endpoints (placeholder auth; currently header `Authorization: Bearer <userId>` for dev only):
 
-#### Example
+| Method | Path          | Description                   | Body (Request)                      | Responses                 |
+| ------ | ------------- | ----------------------------- | ----------------------------------- | ------------------------- |
+| GET    | `/me`         | Get current user profile      | –                                   | 200 `User` / 401          |
+| PUT    | `/me`         | Update profile & lessons      | Partial user fields (see below)     | 200 `User` / 401          |
+| PUT    | `/me/mentees` | Set mentee list (mentor link) | `{ menteeIds: string[] }`           | 200 `User` / 401          |
+| POST   | `/me/photo`   | Upload/replace profile photo  | `multipart/form-data` field `photo` | 200 `{ url }` / 401 / 400 |
 
-Add user to unit as secretary:
+Profile update accepted fields: `fullName, spiritualName, displayName, telegramHandle, whatsapp, photoUrl, dateOfBirth (ISO), nationality, languages, location, preferredLanguage, unitId, mentorId, acaryaId, lessons`.
+
+Photo upload example (replace existing photo):
 
 ```bash
-curl -X POST http://localhost:3001/units/UNIT_ID/members \
-  -H 'Content-Type: application/json' \
-  -d '{"userId":"USER_ID","role":"SECRETARY"}'
+curl -X POST http://localhost:3001/me/photo \
+  -H 'Authorization: Bearer <token>' \
+  -F 'photo=@/path/to/image.jpg'
+```
+
+Lessons array example:
+
+```json
+{
+  "lessons": [
+    { "lesson": 0, "receivedAt": "2025-01-10T00:00:00.000Z" },
+    { "lesson": 1, "receivedAt": null }
+  ]
+}
 ```
 
 ### CORS Behavior
@@ -155,7 +172,7 @@ If request Origin header matches one of the populated values it is echoed back; 
 | Resource not found (update)          | 404    | `text/plain` "not found"         |
 | Delete non-existent resource         | 204    | empty (idempotent)               |
 
-### Roadmap (Planned API Resources)
+### Roadmap (Planned / Not Implemented Yet)
 
 These are not yet implemented but referenced in user stories & data model:
 
@@ -163,7 +180,7 @@ These are not yet implemented but referenced in user stories & data model:
 - Mentor Links: explicit endpoints to link/unlink mentor & mentee
 - Practice Status: `GET/PUT /users/:id/practice` for regularity updates
 - Initiations: CRUD for initiation records
-- Lesson Progress: `POST /lessons`, `GET /users/:id/lessons`
+  -- Lesson Progress: dedicated history endpoints (current model is embedded array)
 - Attention Engine: `GET /attention` (derived list)
 - Telegram Linking: `POST /auth/telegram/init`, `POST /auth/telegram/confirm`
 - Auth Sessions: `POST /auth/magic-link`, `GET /auth/session`, `POST /auth/logout`
@@ -181,8 +198,9 @@ Currently unversioned. Before broad adoption introduce prefix (e.g., `/v1`). For
 
 ### Changelog
 
+- 2025-09-05: Refactored for single-unit model; removed membership endpoints; added /me profile & mentees; added lessons array; units expose registration timestamps.
 - 2025-09-04: Initial documentation draft.
 
 ---
 
-_Last updated: 2025-09-04_
+_Last updated: 2025-09-05_

@@ -6,47 +6,88 @@
 
 export interface UserTrait {
   id: string;
-  createdAt: string; // ISO date
   userId: string;
   trait: string;
 }
 
-export type UnitRole = "MEMBER" | "SECRETARY";
-
-export interface UnitMembership {
-  id: string;
-  createdAt: string; // ISO date
-  userId: string;
-  unitId: string;
-  role: UnitRole;
-}
+// Multi-unit membership removed; single unit per user.
 
 export interface User {
   id: string;
-  createdAt: string; // ISO date
   email: string;
-  name: string | null;
+  fullName: string | null;
+  spiritualName: string | null;
+  displayName: string | null;
+  telegramHandle: string | null;
+  whatsapp: string | null;
+  photoUrl: string | null;
+  dateOfBirth: string | null; // ISO date
+  nationality: string | null;
+  languages: string | null; // comma separated
+  location: string | null;
+  preferredLanguage: string | null;
+  unitId: string | null;
+  mentorId: string | null;
+  acaryaId: string | null;
+  lessons: LessonProgress[]; // ordered by lesson ascending (0..6)
+  menteeIds: string[];
+  initiateIds: string[];
   traits: UserTrait[];
-  memberships: UnitMembership[];
+}
+
+export interface LessonProgress {
+  lesson: number; // 0..6 (0 = preparatory / nama mantra)
+  receivedAt: string | null; // ISO date or null if not yet received
 }
 
 export interface Unit {
   id: string;
-  createdAt: string; // ISO date
   name: string;
   description: string | null;
-  memberships: UnitMembership[];
+  unofficialRegisteredAt: string | null; // ISO
+  officialRegisteredAt: string | null; // ISO
+  userIds: string[]; // users belonging to this unit
 }
 
 // Payload (input) contracts
 export interface CreateUserPayload {
   email: string;
-  name?: string | null;
 }
 
 export interface UpdateUserPayload {
   email?: string;
-  name?: string | null;
+  fullName?: string | null;
+  spiritualName?: string | null;
+  displayName?: string | null;
+  telegramHandle?: string | null;
+  whatsapp?: string | null;
+  photoUrl?: string | null;
+  dateOfBirth?: string | null;
+  nationality?: string | null;
+  languages?: string | null;
+  location?: string | null;
+  preferredLanguage?: string | null;
+  unitId?: string | null;
+  mentorId?: string | null;
+  acaryaId?: string | null;
+  lessons?: LessonProgress[];
+}
+
+// Auth payloads
+export interface RegisterPayload {
+  email: string;
+  password: string;
+}
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+export interface ResetPasswordPayload {
+  email: string;
+  newPassword: string;
+}
+export interface SetMenteesPayload {
+  menteeIds: string[];
 }
 
 export interface CreateUnitPayload {
@@ -64,10 +105,7 @@ export interface AddTraitPayload {
   trait: string;
 }
 
-export interface AddMemberPayload {
-  userId: string;
-  role?: UnitRole;
-}
+// Legacy payloads removed (single unit model)
 
 // Re-export grouping for ergonomic import patterns: import { User } from '@am-crm/shared'
-export const __version = "0.0.1-contracts";
+// Contract version constant removed; rely on package versioning.

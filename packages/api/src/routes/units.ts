@@ -1,19 +1,23 @@
 import type { CreateUnitPayload, UpdateUnitPayload } from "@am-crm/shared";
-import type { Hono } from "hono";
-import { prisma } from "../db";
-import { mapMembership, mapUnit } from "../mappers";
+import type { App } from "../app";
+import { mapUnit } from "../utils/mappers";
 
-export const registerUnitRoutes = (app: Hono) => {
+export const registerUnitRoutes = (app: App) => {
   // Units CRUD
   app.get("/units", async (c) => {
-    const units = await prisma.unit.findMany({ include: { memberships: true } });
-    return c.json(units.map(mapUnit));
+    const units = await app.prisma.unit.findMany({ include: { users: { select: { id: true } } } });
+    return c.json(
+      units.map((u) => ({
+        ...mapUnit(u),
+        userIds: u.users.map((x) => x.id),
+      })),
+    );
   });
 
   app.post("/units", async (c) => {
     const body = (await c.req.json().catch(() => ({}))) as Partial<CreateUnitPayload>;
     if (!body.name) return c.text("name required", 400);
-    const unit = await prisma.unit.create({ data: { name: body.name, description: body.description ?? null } });
+    const unit = await app.prisma.unit.create({ data: { name: body.name, description: body.description ?? null } });
     return c.json(mapUnit(unit), 201);
   });
 
@@ -23,27 +27,16 @@ export const registerUnitRoutes = (app: Hono) => {
     const data: Record<string, unknown> = {};
     if (body.name !== undefined) data.name = body.name;
     if (body.description !== undefined) data.description = body.description;
-    const unit = await prisma.unit.update({ where: { id }, data }).catch(() => null);
+    const unit = await app.prisma.unit
+      .update({ where: { id }, data, include: { users: { select: { id: true } } } })
+      .catch(() => null);
     if (!unit) return c.text("not found", 404);
-    return c.json(mapUnit(unit));
+    return c.json({ ...mapUnit(unit), userIds: unit.users.map((x) => x.id) });
   });
 
   app.delete("/units/:id", async (c) => {
     const id = c.req.param("id");
-    await prisma.unit.delete({ where: { id } }).catch(() => null);
-    return c.body(null, 204);
-  });
-
-  // Memberships (add/remove users to a unit)
-  app.get("/units/:id/members", async (c) => {
-    const id = c.req.param("id");
-    const members = await prisma.unitMembership.findMany({ where: { unitId: id }, include: { user: true } });
-    return c.json(members.map(mapMembership));
-  });
-
-  app.delete("/units/:unitId/members/:userId", async (c) => {
-    const { unitId, userId } = c.req.param();
-    await prisma.unitMembership.delete({ where: { userId_unitId: { userId, unitId } } }).catch(() => null);
+    await app.prisma.unit.delete({ where: { id } }).catch(() => null);
     return c.body(null, 204);
   });
 };

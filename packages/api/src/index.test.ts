@@ -11,7 +11,7 @@ beforeAll(async () => {
   await prisma.user.upsert({
     where: { email: "test@example.com" },
     update: {},
-    create: { email: "test@example.com", name: "Test User" },
+    create: { email: "test@example.com", displayName: "Test User" },
   });
   server = serve({ port: 0, fetch: app.fetch });
 });

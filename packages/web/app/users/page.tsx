@@ -1,9 +1,9 @@
 "use client";
 
-import type { CreateUserPayload, RequiredFull, User } from "@am-crm/shared";
+import type { CreateUserPayload, User } from "@am-crm/shared";
 import { useCallback, useEffect, useId, useState } from "react";
 
-type UserFormData = RequiredFull<CreateUserPayload>;
+type UserFormData = CreateUserPayload;
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -11,11 +11,10 @@ export default function UsersPage() {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [formData, setFormData] = useState<UserFormData>({ email: "", name: "" });
+  const [formData, setFormData] = useState<UserFormData>({ email: "" });
   const [submitting, setSubmitting] = useState(false);
 
   const emailId = useId();
-  const nameId = useId();
 
   const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL;
   if (!apiBase) throw new Error("API_BASE_URL is not defined");
@@ -81,7 +80,7 @@ export default function UsersPage() {
       await fetchUsers();
       setShowForm(false);
       setEditingUser(null);
-      setFormData({ email: "", name: "" });
+      setFormData({ email: "" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Operation failed");
     } finally {
@@ -104,7 +103,7 @@ export default function UsersPage() {
   // Handle edit
   const handleEdit = (user: User) => {
     setEditingUser(user);
-    setFormData({ email: user.email, name: user.name || "" });
+    setFormData({ email: user.email });
     setShowForm(true);
   };
 
@@ -112,7 +111,7 @@ export default function UsersPage() {
   const handleCancel = () => {
     setShowForm(false);
     setEditingUser(null);
-    setFormData({ email: "", name: "" });
+    setFormData({ email: "" });
   };
 
   useEffect(() => {
@@ -203,22 +202,7 @@ export default function UsersPage() {
                 />
               </div>
               <div style={{ marginBottom: "20px" }}>
-                <label htmlFor={nameId} style={{ display: "block", marginBottom: "6px", fontWeight: "500" }}>
-                  Name
-                </label>
-                <input
-                  id={nameId}
-                  type="text"
-                  value={formData.name ?? ""}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  style={{
-                    width: "100%",
-                    padding: "8px 12px",
-                    border: "1px solid #ddd",
-                    borderRadius: "4px",
-                    fontSize: "14px",
-                  }}
-                />
+                {/* Name field removed (schema now uses displayName/spiritualName elsewhere) */}
               </div>
               <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
                 <button
@@ -275,10 +259,10 @@ export default function UsersPage() {
             <thead>
               <tr style={{ backgroundColor: "#f8f9fa" }}>
                 <th style={{ padding: "12px", textAlign: "left", borderBottom: "1px solid #dee2e6" }}>Email</th>
-                <th style={{ padding: "12px", textAlign: "left", borderBottom: "1px solid #dee2e6" }}>Name</th>
-                <th style={{ padding: "12px", textAlign: "left", borderBottom: "1px solid #dee2e6" }}>Traits</th>
-                <th style={{ padding: "12px", textAlign: "left", borderBottom: "1px solid #dee2e6" }}>Units</th>
-                <th style={{ padding: "12px", textAlign: "left", borderBottom: "1px solid #dee2e6" }}>Created</th>
+                <th style={{ padding: "12px", textAlign: "left", borderBottom: "1px solid #dee2e6" }}>Display</th>
+                <th style={{ padding: "12px", textAlign: "left", borderBottom: "1px solid #dee2e6" }}>Unit</th>
+                <th style={{ padding: "12px", textAlign: "left", borderBottom: "1px solid #dee2e6" }}>Mentor</th>
+                <th style={{ padding: "12px", textAlign: "left", borderBottom: "1px solid #dee2e6" }}>Mentees</th>
                 <th style={{ padding: "12px", textAlign: "center", borderBottom: "1px solid #dee2e6" }}>Actions</th>
               </tr>
             </thead>
@@ -286,52 +270,10 @@ export default function UsersPage() {
               {users.map((user) => (
                 <tr key={user.id} style={{ borderBottom: "1px solid #dee2e6" }}>
                   <td style={{ padding: "12px" }}>{user.email}</td>
-                  <td style={{ padding: "12px" }}>{user.name || "-"}</td>
-                  <td style={{ padding: "12px" }}>
-                    {user.traits.length > 0 ? (
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
-                        {user.traits.map((trait) => (
-                          <span
-                            key={trait.id}
-                            style={{
-                              backgroundColor: "#e9ecef",
-                              padding: "2px 8px",
-                              borderRadius: "12px",
-                              fontSize: "12px",
-                            }}
-                          >
-                            {trait.trait}
-                          </span>
-                        ))}
-                      </div>
-                    ) : (
-                      "-"
-                    )}
-                  </td>
-                  <td style={{ padding: "12px" }}>
-                    {user.memberships.length > 0 ? (
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
-                        {user.memberships.map((membership) => (
-                          <span
-                            key={membership.id}
-                            style={{
-                              backgroundColor: "#d1ecf1",
-                              padding: "2px 8px",
-                              borderRadius: "12px",
-                              fontSize: "12px",
-                            }}
-                          >
-                            {membership.unitId} ({membership.role})
-                          </span>
-                        ))}
-                      </div>
-                    ) : (
-                      "-"
-                    )}
-                  </td>
-                  <td style={{ padding: "12px", fontSize: "14px", color: "#666" }}>
-                    {new Date(user.createdAt).toLocaleDateString()}
-                  </td>
+                  <td style={{ padding: "12px" }}>{user.displayName || user.spiritualName || user.fullName || "-"}</td>
+                  <td style={{ padding: "12px" }}>{user.unitId || "-"}</td>
+                  <td style={{ padding: "12px" }}>{user.mentorId || "-"}</td>
+                  <td style={{ padding: "12px" }}>{user.menteeIds?.length ?? 0}</td>
                   <td style={{ padding: "12px", textAlign: "center" }}>
                     <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
                       <button
