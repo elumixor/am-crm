@@ -1,5 +1,5 @@
 import type { CreateUnitPayload, UpdateUnitPayload } from "@am-crm/shared";
-import type { App } from "../app";
+import type { App } from "../app/app";
 import { mapUnit, mapUser } from "../utils/mappers";
 
 export const registerUnitRoutes = (app: App) => {

@@ -39,10 +39,8 @@ export default function UsersPage() {
   }, [apiBase]);
 
   const fetchUnits = useCallback(async () => {
-    try {
-      const res = await fetch(`${apiBase}/units`);
-      if (res.ok) setUnits(await res.json());
-    } catch {}
+    const res = await fetch(`${apiBase}/units`);
+    if (res.ok) setUnits(await res.json());
   }, [apiBase]);
 
   // Create user

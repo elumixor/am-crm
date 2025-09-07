@@ -22,7 +22,7 @@ model User {
   displayName       String?
   telegramHandle    String?
   whatsapp          String?
-  photoUrl          String?
+  photoKey          String?
   dateOfBirth       DateTime?
   nationality       String?
   languages         String?

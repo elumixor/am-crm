@@ -5,6 +5,7 @@
   "scripts": {
     "db:up": "docker compose -f ./docker-compose.yml up -d db",
     "db:migrate": "prisma migrate dev --name init",
+    "db:migrate:deploy": "prisma migrate deploy",
     "db:generate": "prisma generate",
     "test": "bun test"
   },

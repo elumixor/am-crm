@@ -1,5 +1,6 @@
 import type { AddTraitPayload, CreateUserPayload, UpdateUserPayload } from "@am-crm/shared";
-import type { App } from "../app";
+
+import type { App } from "../app/app";
 import { mapTrait, mapUser } from "../utils/mappers";
 
 export const registerUserRoutes = (app: App) => {
@@ -7,7 +8,8 @@ export const registerUserRoutes = (app: App) => {
   app.get("/users", async (c) => {
     // Include mentees relation so menteeIds are populated in DTO (frontend relies on this)
     const users = await app.prisma.user.findMany({ include: { traits: true, mentees: true } });
-    return c.json(users.map(mapUser));
+    const mappedUser = await Promise.all(users.map(mapUser));
+    return c.json(mappedUser);
   });
 
   app.get("/users/:id", async (c) => {
@@ -16,6 +18,7 @@ export const registerUserRoutes = (app: App) => {
       where: { id },
       include: { traits: true, mentees: true },
     });
+
     if (!user) return c.text("not found", 404);
     return c.json(mapUser(user));
   });
@@ -32,8 +35,10 @@ export const registerUserRoutes = (app: App) => {
     const body = (await c.req.json().catch(() => ({}))) as Partial<UpdateUserPayload>;
     const data: Record<string, unknown> = {};
     if (body.email !== undefined) data.email = body.email;
+
     const user = await app.prisma.user.update({ where: { id }, data }).catch(() => null);
     if (!user) return c.text("not found", 404);
+
     return c.json(mapUser(user));
   });
 

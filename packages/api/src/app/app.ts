@@ -1,11 +1,13 @@
+import { di } from "@elumixor/di";
 import { PrismaClient } from "@prisma/client";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { S3Service } from "./s3";
+import { AWSUploadService } from "../utils/aws-upload-service";
 
+@di.injectable
 export class App extends Hono {
   readonly prisma = new PrismaClient();
-  readonly s3 = new S3Service();
+  readonly uploadService = new AWSUploadService();
 
   private allowedOrigins = [process.env.FRONT_LOCAL_URL, process.env.FRONT_PROD_URL, process.env.FRONT_DEV_URL];
 

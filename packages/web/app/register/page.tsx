@@ -1,7 +1,8 @@
 "use client";
+
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "../../components/AuthContext";
-import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
   const { register, loading, token } = useAuth();

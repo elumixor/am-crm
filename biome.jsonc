@@ -16,7 +16,11 @@
     "rules": {
       "recommended": true,
       "suspicious": {
-        "noExplicitAny": "error"
+        "noExplicitAny": "error",
+        "noEmptyBlockStatements": "error"
+      },
+      "complexity": {
+        "noUselessCatch": "error"
       },
       "a11y": {
         "useKeyWithClickEvents": "off"
