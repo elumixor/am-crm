@@ -1,8 +1,8 @@
 "use client";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { useAuth } from "../../../components/AuthContext";
+
 import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { EntityChip } from "../../../components/EntityChip";
 
 interface UserDto {

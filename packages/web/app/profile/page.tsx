@@ -61,9 +61,18 @@ export default function ProfilePage() {
       router.replace("/login");
       return;
     }
+
     // Load profile
     (async () => {
       const res = await fetch(`${apiBase}/me`, { headers: { authorization: `Bearer ${token}` } });
+
+      if (res.status === 401) {
+        // Session expired or backend has no session for this token
+        localStorage.removeItem("session");
+        router.replace("/login");
+        return;
+      }
+
       if (res.ok) setUser(await res.json());
       const unitsRes = await fetch(`${apiBase}/units`);
       if (unitsRes.ok) setUnits(await unitsRes.json());

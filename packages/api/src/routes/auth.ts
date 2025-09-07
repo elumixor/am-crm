@@ -1,7 +1,7 @@
+import { randomUUID } from "node:crypto";
 import type { LoginPayload, RegisterPayload, ResetPasswordPayload } from "@am-crm/shared";
-import { randomUUID } from "crypto";
 import type { Context } from "hono";
-import type { App } from "../app";
+import type { App } from "../app/app";
 
 // In-memory session store (MVP only)
 const sessions = new Map<string, string>(); // token -> userId

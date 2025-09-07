@@ -13,6 +13,7 @@
     "lint": "biome lint",
     "format": "biome format --write",
     "migrate": "dotenv -e .env -- turbo db:migrate",
+    "migrate:deploy": "dotenv -e .env -- turbo db:migrate:deploy",
     "generate": "dotenv -e .env -- turbo db:generate"
   },
   "devDependencies": {

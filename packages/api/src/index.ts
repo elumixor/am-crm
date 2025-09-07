@@ -1,4 +1,4 @@
-import { App } from "./app";
+import { App } from "./app/app";
 import { registerAuthRoutes } from "./routes/auth";
 import { registerBaseRoutes } from "./routes/base";
 import { registerProfileRoutes } from "./routes/profile";

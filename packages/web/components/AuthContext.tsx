@@ -1,5 +1,6 @@
 "use client";
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+
+import { createContext, type ReactNode, useCallback, useContext, useEffect, useState } from "react";
 
 interface AuthState {
   token: string | null;
@@ -23,14 +24,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const stored = typeof window !== "undefined" ? localStorage.getItem("session") : null;
     if (stored) {
-      try {
-        const parsed = JSON.parse(stored) as { token: string; userId: string };
-        setToken(parsed.token);
-        setUserId(parsed.userId);
-      } catch {}
+      const parsed = JSON.parse(stored) as { token: string; userId: string };
+      setToken(parsed.token);
+      setUserId(parsed.userId);
     }
+
     setLoading(false);
   }, []);
+
+  // Validate token against backend to avoid front/back mismatch
+  useEffect(() => {
+    (async () => {
+      if (!token) return;
+
+      const res = await fetch(`${apiBase}/me`, { headers: { authorization: `Bearer ${token}` } });
+      if (res.status === 401) {
+        // Session expired on backend; clear local copy
+        setToken(null);
+        setUserId(null);
+        localStorage.removeItem("session");
+      }
+    })();
+  }, [token]);
 
   const login = useCallback(async (email: string, password: string) => {
     const res = await fetch(`${apiBase}/auth/login`, {

@@ -4,9 +4,9 @@
     "DATABASE_URL",
     "API_BASE_URL",
     "NEXT_PUBLIC_API_BASE_URL",
-    "LOCAL_FRONTEND_URL",
-    "VERCEL_PROD_URL",
-    "VERCEL_DEV_URL",
+    "FRONT_LOCAL_URL",
+    "FRONT_PROD_URL",
+    "FRONT_DEV_URL",
     "AWS_REGION",
     "AWS_BUCKET_NAME",
     "AWS_ACCESS_KEY_ID",
@@ -17,9 +17,15 @@
     "db:up": { "cache": false, "outputs": [] },
     // Runs database migrations
     "db:migrate": { "dependsOn": ["db:up"], "cache": false, "outputs": [] },
+    "db:migrate:deploy": { "dependsOn": ["db:up"], "cache": false, "outputs": [] },
     "db:generate": { "dependsOn": ["db:up"], "cache": false, "outputs": [] },
     // Runs dev commands in all packages (basically api (back-end) and web (front-end))
-    "dev": { "dependsOn": ["db:migrate"], "cache": false, "outputs": [] },
+    "dev": {
+      "dependsOn": ["db:migrate"],
+      "cache": false,
+      "outputs": [],
+      "env": ["FRONT_LOCAL_URL", "FRONT_PROD_URL", "FRONT_DEV_URL"]
+    },
     // Builds everything
     "build": {
       "dependsOn": ["^build"],

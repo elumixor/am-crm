@@ -1,6 +1,5 @@
 import type { SetMenteesPayload, UpdateUserPayload } from "@am-crm/shared";
-import { randomUUID } from "crypto";
-import type { App } from "../app";
+import type { App } from "../app/app";
 import { mapUser } from "../utils/mappers";
 import { requireAuth } from "./auth";
 
@@ -102,8 +101,13 @@ export const registerProfileRoutes = (app: App) => {
     const buffer = Buffer.from(arrayBuffer);
     const contentType = file.type || "application/octet-stream";
     const key = `user-photos/${userId}`;
-    const photoUrl = await app.s3.upload(key, buffer, contentType);
-    await app.prisma.user.update({ where: { id: userId }, data: { photoUrl } });
-    return c.json({ url: photoUrl });
+    await app.uploadService.upload(key, buffer, contentType);
+
+    // Update only the photoKey; cast the field name to satisfy pre-generate types
+    await app.prisma.user.update({ where: { id: userId }, data: { /* @ts-ignore-next-line */ photoKey: key } });
+
+    // Return a fresh signed URL for immediate use
+    const url = await app.s3.getSignedUrl(key);
+    return c.json({ url });
   });
 };
