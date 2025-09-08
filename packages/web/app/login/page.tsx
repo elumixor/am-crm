@@ -1,7 +1,9 @@
 "use client";
-import { useState } from "react";
-import { useAuth } from "../../components/AuthContext";
+
+import { useAuth } from "contexts/AuthContext";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import ui from "styles/ui.module.scss";
 
 export default function LoginPage() {
   const { login, loading, token } = useAuth();
@@ -13,9 +15,9 @@ export default function LoginPage() {
   if (!loading && token) router.replace("/profile");
 
   return (
-    <main style={{ fontFamily: "system-ui", padding: 24, maxWidth: 400 }}>
+    <main className={`${ui.container} ${ui.main} ${ui.max400}`}>
       <h1>Login</h1>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p className={ui.textDanger}>{error}</p>}
       <form
         onSubmit={async (e) => {
           e.preventDefault();
@@ -24,7 +26,7 @@ export default function LoginPage() {
           if (!ok) setError("Invalid credentials");
           else router.replace("/profile");
         }}
-        style={{ display: "grid", gap: 12 }}
+        className={ui.gridGap12}
       >
         <input placeholder="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         <input placeholder="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />

@@ -1,30 +1,28 @@
 "use client";
+import { useAuth } from "contexts/AuthContext";
 import { useState } from "react";
-
-const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL;
-if (!apiBase) throw new Error("API_BASE_URL is not defined");
+import ui from "styles/ui.module.scss";
 
 export default function ResetPasswordPage() {
+  const { resetPassword } = useAuth();
+
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
+
   const [message, setMessage] = useState<string | null>(null);
 
   return (
-    <main style={{ fontFamily: "system-ui", padding: 24, maxWidth: 400 }}>
+    <main className={`${ui.container} ${ui.main} ${ui.max400}`}>
       <h1>Reset Password</h1>
       {message && <p>{message}</p>}
       <form
         onSubmit={async (e) => {
           e.preventDefault();
           setMessage(null);
-          const res = await fetch(`${apiBase}/auth/reset-password`, {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ email, newPassword }),
-          });
-          setMessage(res.ok ? "Password reset." : "Failed to reset password");
+          await resetPassword(email, newPassword);
+          setMessage("Password reset.");
         }}
-        style={{ display: "grid", gap: 12 }}
+        className={ui.gridGap12}
       >
         <input placeholder="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         <input

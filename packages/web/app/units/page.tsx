@@ -1,27 +1,23 @@
 "use client";
-import { useEffect, useState, useCallback } from "react";
+import type { Unit } from "@am-crm/db";
 import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { client } from "services/http";
+import ui from "styles/ui.module.scss";
+import { z } from "zod";
 
-interface UnitSummary {
-  id: string;
-  name: string;
-  description: string | null;
-  userIds: string[];
-}
-
-const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL;
-if (!apiBase) throw new Error("API_BASE_URL is not defined");
+const createUnitSchema = z.object({ name: z.string().min(1), description: z.string().optional() });
 
 export default function UnitsPage() {
-  const [units, setUnits] = useState<UnitSummary[]>([]);
+  const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
   const [newName, setNewName] = useState("");
   const router = useRouter();
 
   const load = useCallback(async () => {
     setLoading(true);
-    const res = await fetch(`${apiBase}/units`);
-    if (res.ok) setUnits(await res.json());
+    const res = await (await client.units.$get()).json();
+    if (res.ok) setUnits(res as unknown as Unit[]);
     setLoading(false);
   }, []);
 
@@ -30,33 +26,31 @@ export default function UnitsPage() {
   }, [load]);
 
   async function createUnit() {
-    if (!newName.trim()) return;
-    const res = await fetch(`${apiBase}/units`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name: newName.trim() }),
-    });
+    const payload = { name: newName.trim() };
+    // Client-side validation mirrors API validator
+    createUnitSchema.parse(payload);
+    const res = await client.units.$post({ json: payload });
     if (res.ok) {
-      const unit = (await res.json()) as UnitSummary;
+      const unit = (await res.json()) as Unit;
       router.push(`/units/${unit.id}`);
     }
   }
 
   async function remove(id: string) {
     if (!confirm("Delete unit?")) return;
-    await fetch(`${apiBase}/units/${id}`, { method: "DELETE" });
+    await client.units[":id"].$delete({ param: { id } });
     await load();
   }
 
   return (
-    <main style={{ fontFamily: "system-ui", padding: 24, maxWidth: 900 }}>
+    <main className={`${ui.container} ${ui.main} ${ui.max900}`}>
       <h1>Units</h1>
-      <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
+      <div className={`${ui.flexRowGap8} ${ui.mb24}`}>
         <input
           placeholder="New unit name"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
-          style={{ flex: 1 }}
+          className={ui.flex1}
         />
         <button type="button" onClick={createUnit} disabled={!newName.trim()}>
           Add
@@ -67,27 +61,27 @@ export default function UnitsPage() {
       ) : units.length === 0 ? (
         <p>No units yet.</p>
       ) : (
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <table className={ui.table}>
           <thead>
-            <tr style={{ textAlign: "left", background: "#f5f5f5" }}>
-              <th style={{ padding: 8 }}>Name</th>
-              <th style={{ padding: 8 }}>Description</th>
-              <th style={{ padding: 8 }}>Users</th>
-              <th style={{ padding: 8 }}>Actions</th>
+            <tr className={ui.tableHead}>
+              <th className={ui.th}>Name</th>
+              <th className={ui.th}>Description</th>
+              <th className={ui.th}>Users</th>
+              <th className={ui.th}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {units.map((u) => (
-              <tr key={u.id} style={{ borderTop: "1px solid #ddd" }}>
-                <td style={{ padding: 8 }}>
-                  <a href={`/units/${u.id}`} style={{ color: "#0366d6", textDecoration: "none" }}>
+              <tr key={u.id}>
+                <td className={ui.td}>
+                  <a href={`/units/${u.id}`} className={ui.link}>
                     {u.name}
                   </a>
                 </td>
-                <td style={{ padding: 8 }}>{u.description || "-"}</td>
-                <td style={{ padding: 8 }}>{u.userIds.length}</td>
-                <td style={{ padding: 8 }}>
-                  <button type="button" onClick={() => remove(u.id)} style={{ color: "#c00" }}>
+                <td className={ui.td}>{u.description || "-"}</td>
+                <td className={ui.td}>{"fix me"}</td>
+                <td className={ui.td}>
+                  <button type="button" onClick={() => remove(u.id)} className={ui.textDanger}>
                     Delete
                   </button>
                 </td>

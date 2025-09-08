@@ -1,8 +1,8 @@
 // Prisma schema (initial minimal)
 
 generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "linux-arm64-openssl-3.0.x", "linux-arm64-openssl-1.1.x"]
+  provider = "prisma-client-js"
+  output   = "../dist"
 }
 
 datasource db {
@@ -20,7 +20,7 @@ model User {
   fullName          String?
   spiritualName     String?
   displayName       String?
-  telegramHandle    String?
+  telegram          String?
   whatsapp          String?
   photoKey          String?
   dateOfBirth       DateTime?
@@ -45,18 +45,6 @@ model User {
 
   // Lesson progression stored as JSON array of objects { lesson: Int, receivedAt: DateTime? }
   lessons Json @default("[]")
-
-  traits UserTrait[]
-}
-
-model UserTrait {
-  id     String @id @default(cuid())
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
-  trait  String
-
-  @@unique([userId, trait])
-  @@index([trait])
 }
 
 model Unit {

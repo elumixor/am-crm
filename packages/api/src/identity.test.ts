@@ -1,10 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
-import { PrismaClient, type User } from "@prisma/client";
+
+import type { User } from "@am-crm/db";
 import { serve } from "bun";
+import { prisma } from "services/prisma";
 import appApi from "./index";
 
 let apiServer: ReturnType<typeof serve>;
-const prisma = new PrismaClient();
 
 beforeAll(async () => {
   await prisma.$connect();

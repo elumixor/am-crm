@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { EntityChip } from "./EntityChip";
+import ui from "styles/ui.module.scss";
 
 export interface ChipsSelectorItem {
   id: string;
@@ -29,9 +30,9 @@ export function ChipsSelector(props: ChipsSelectorProps) {
     : pool.slice(0, 50);
 
   return (
-    <div style={{ display: "grid", gap: 4 }}>
-      {label && <span style={{ fontSize: 12, fontWeight: 600, userSelect: "none" }}>{label}</span>}
-      <div style={{ display: "flex", gap: 8 }}>
+    <div className={ui.gridGap4}>
+      {label && <span className={`${ui.labelSm} ${ui.labelStatic}`}>{label}</span>}
+      <div className={ui.flexRowGap8}>
         <input
           placeholder={placeholder || "Search..."}
           value={query}
@@ -56,7 +57,7 @@ export function ChipsSelector(props: ChipsSelectorProps) {
         </select>
       </div>
       {selectedIds.length > 0 && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+        <div className={ui.flexWrapGap8}>
           {selectedIds.map((id) => {
             const item = items.find((x) => x.id === id);
             return (

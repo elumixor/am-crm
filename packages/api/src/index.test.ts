@@ -1,9 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
-import { PrismaClient, type User } from "@prisma/client";
+import type { User } from "@am-crm/db";
 import { serve } from "bun";
+import { prisma } from "services/prisma";
 import app from "./index";
 
-const prisma = new PrismaClient();
 let server: ReturnType<typeof serve>;
 
 beforeAll(async () => {

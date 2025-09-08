@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import ui from "styles/ui.module.scss";
 
 interface User {
   id: string;
@@ -53,9 +54,9 @@ export default function IdentityPage() {
   }, [selectedUnit]);
 
   return (
-    <main style={{ fontFamily: "system-ui", padding: 24, display: "grid", gap: 32 }}>
+    <main className={`${ui.container} ${ui.main} ${ui.gridGap32}`}>
       <h1>Identity & Units (Phase 1)</h1>
-      <section style={{ border: "1px solid #ddd", padding: 16 }}>
+      <section className={ui.panel}>
         <h2>Users</h2>
         <form
           onSubmit={async (e) => {
@@ -78,12 +79,12 @@ export default function IdentityPage() {
             <li
               key={u.id}
               onClick={() => setSelectedUser(u.id)}
-              style={{ cursor: "pointer", fontWeight: selectedUser === u.id ? "bold" : undefined }}
+              className={`${ui.cursorPointer} ${selectedUser === u.id ? ui.fw700 : ""}`}
             >
               {u.email}
               <button
                 type="button"
-                style={{ marginLeft: 8 }}
+                className={ui.ml8}
                 onClick={async (ev) => {
                   ev.stopPropagation();
                   await fetch(`${apiBase}/users/${u.id}`, { method: "DELETE" });
@@ -96,7 +97,7 @@ export default function IdentityPage() {
           ))}
         </ul>
       </section>
-      <section style={{ border: "1px solid #ddd", padding: 16 }}>
+      <section className={ui.panel}>
         <h2>Units</h2>
         <form
           onSubmit={async (e) => {
@@ -123,12 +124,12 @@ export default function IdentityPage() {
             <li
               key={u.id}
               onClick={() => setSelectedUnit(u.id)}
-              style={{ cursor: "pointer", fontWeight: selectedUnit === u.id ? "bold" : undefined }}
+              className={`${ui.cursorPointer} ${selectedUnit === u.id ? ui.fw700 : ""}`}
             >
               {u.name}
               <button
                 type="button"
-                style={{ marginLeft: 8 }}
+                className={ui.ml8}
                 onClick={async (ev) => {
                   ev.stopPropagation();
                   await fetch(`${apiBase}/units/${u.id}`, { method: "DELETE" });
@@ -143,9 +144,9 @@ export default function IdentityPage() {
         </ul>
       </section>
       {selectedUnit && (
-        <section style={{ border: "1px solid #ddd", padding: 16 }}>
+        <section className={ui.panel}>
           <h2>Memberships (Unit)</h2>
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div className={`${ui.flexRowGap8} ${ui.alignCenter}`}>
             <select value={selectedUser} onChange={(e) => setSelectedUser((e.target as HTMLSelectElement).value)}>
               <option value="">-- pick user --</option>
               {users.map((u) => (

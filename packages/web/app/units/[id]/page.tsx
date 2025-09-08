@@ -1,7 +1,10 @@
 "use client";
+import { ChipsSelector } from "components/ChipsSelector";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ChipsSelector } from "../../../components/ChipsSelector";
+import { client } from "services/http";
+import ui from "styles/ui.module.scss";
+import { z } from "zod";
 
 interface User {
   id: string;
@@ -14,13 +17,16 @@ interface User {
 interface UnitDetail {
   id: string;
   name: string;
-  description: string | null;
+  description: string;
   userIds: string[];
   users?: User[]; // from detail endpoint
 }
 
-const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL;
-if (!apiBase) throw new Error("API_BASE_URL is not defined");
+const updateUnitSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().nullable().optional(),
+  userIds: z.array(z.string()),
+});
 
 export default function UnitProfilePage() {
   const params = useParams();
@@ -32,10 +38,11 @@ export default function UnitProfilePage() {
 
   useEffect(() => {
     (async () => {
-      const res = await fetch(`${apiBase}/units/${id}`);
+      const res = await client.units[":id"].$get({ param: { id } });
       if (res.ok) setUnit(await res.json());
-      const usersRes = await fetch(`${apiBase}/users`);
-      if (usersRes.ok) setAllUsers(await usersRes.json());
+
+      const usersRes = await (await client.users.$get()).json();
+      if (usersRes.ok) setAllUsers(usersRes.data);
     })();
   }, [id]);
 
@@ -46,16 +53,15 @@ export default function UnitProfilePage() {
   async function save() {
     if (!unit) return;
     setSaving(true);
-    await fetch(`${apiBase}/units/${unit.id}`, {
-      method: "PUT",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name: unit.name, description: unit.description, userIds: unit.userIds }),
-    });
+    const payload = { name: unit.name, description: unit.description, userIds: unit.userIds };
+    updateUnitSchema.parse(payload);
+
+    await client.units[":id"].$put({ param: { id: unit.id }, json: payload });
     setSaving(false);
     router.refresh();
   }
 
-  if (!unit) return <main style={{ padding: 24 }}>Loading...</main>;
+  if (!unit) return <main className={ui.main}>Loading...</main>;
 
   const userItems = allUsers.map((u) => ({
     id: u.id,
@@ -63,21 +69,21 @@ export default function UnitProfilePage() {
   }));
 
   return (
-    <main style={{ fontFamily: "system-ui", padding: 24, maxWidth: 800 }}>
-      <a href="/units" style={{ textDecoration: "none", color: "#0366d6" }}>
+    <main className={`${ui.container} ${ui.main} ${ui.max800}`}>
+      <a href="/units" className={ui.link}>
         ← Back to units
       </a>
-      <h1 style={{ marginTop: 12 }}>Unit: {unit.name}</h1>
-      <div style={{ display: "grid", gap: 16 }}>
-        <label style={{ display: "grid", gap: 4 }}>
-          <span style={{ fontSize: 12, fontWeight: 600 }}>Name</span>
+      <h1 className={ui.mt12}>Unit: {unit.name}</h1>
+      <div className={ui.gridGap16}>
+        <label className={ui.gridGap4}>
+          <span className={ui.labelSm}>Name</span>
           <input value={unit.name} onChange={(e) => update("name", e.target.value)} />
         </label>
-        <label style={{ display: "grid", gap: 4 }}>
-          <span style={{ fontSize: 12, fontWeight: 600 }}>Description</span>
+        <label className={ui.gridGap4}>
+          <span className={ui.labelSm}>Description</span>
           <textarea
             value={unit.description || ""}
-            onChange={(e) => update("description", e.target.value || null)}
+            onChange={(e) => update("description", e.target.value ?? null)}
             rows={3}
           />
         </label>
@@ -88,7 +94,7 @@ export default function UnitProfilePage() {
           onChange={(ids) => update("userIds", ids)}
           placeholder="Search users..."
         />
-        <div style={{ display: "flex", gap: 12 }}>
+        <div className={ui.flexRowGap12}>
           <button type="button" onClick={save} disabled={saving}>
             {saving ? "Saving..." : "Save"}
           </button>

@@ -26,10 +26,20 @@
         "useKeyWithClickEvents": "off"
       },
       "style": {
+        "useImportType": "error",
         "useConsistentObjectDefinitions": {
           "level": "warn",
           "options": {
             "syntax": "shorthand"
+          }
+        },
+        "useReadonlyClassProperties": "warn"
+      },
+      "nursery": {
+        "useConsistentTypeDefinitions": {
+          "level": "warn",
+          "options": {
+            "style": "interface"
           }
         }
       }

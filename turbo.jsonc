@@ -10,7 +10,8 @@
     "AWS_REGION",
     "AWS_BUCKET_NAME",
     "AWS_ACCESS_KEY_ID",
-    "AWS_SECRET_ACCESS_KEY"
+    "AWS_SECRET_ACCESS_KEY",
+    "JWT_SECRET"
   ],
   "tasks": {
     // Spins up database in a docker image
@@ -20,28 +21,9 @@
     "db:migrate:deploy": { "dependsOn": ["db:up"], "cache": false, "outputs": [] },
     "db:generate": { "dependsOn": ["db:up"], "cache": false, "outputs": [] },
     // Runs dev commands in all packages (basically api (back-end) and web (front-end))
-    "dev": {
-      "dependsOn": ["db:migrate"],
-      "cache": false,
-      "outputs": [],
-      "env": ["FRONT_LOCAL_URL", "FRONT_PROD_URL", "FRONT_DEV_URL"]
-    },
+    "dev": { "dependsOn": ["db:migrate"], "cache": false, "outputs": [] },
     // Builds everything
-    "build": {
-      "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
-      "env": [
-        "DATABASE_URL",
-        "API_BASE_URL",
-        "NEXT_PUBLIC_API_BASE_URL",
-        "VERCEL_PROD_URL",
-        "VERCEL_DEV_URL",
-        "AWS_REGION",
-        "AWS_BUCKET_NAME",
-        "AWS_ACCESS_KEY_ID",
-        "AWS_SECRET_ACCESS_KEY"
-      ]
-    },
+    "build": { "dependsOn": ["^build"], "outputs": ["dist/**", ".next/**", "!.next/cache/**"] },
     // Tests everything
     "test": { "dependsOn": ["^build", "db:migrate"], "outputs": [] }
   }

@@ -1,11 +1,15 @@
 "use client";
 
-import type { CreateUserPayload, User } from "@am-crm/shared";
+import type { User } from "@am-crm/shared";
+import { EntityChip } from "components/EntityChip";
+import type { InferRequestType } from "hono/client";
 import Link from "next/link";
 import { useCallback, useEffect, useId, useState } from "react";
-import { EntityChip } from "../../components/EntityChip";
+import { client } from "services/http";
+import ui from "styles/ui.module.scss";
+import { z } from "zod";
 
-type UserFormData = CreateUserPayload;
+type CreateUserPayload = InferRequestType<typeof client.users.$post>["json"];
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -14,21 +18,18 @@ export default function UsersPage() {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [formData, setFormData] = useState<UserFormData>({ email: "" });
+  const [formData, setFormData] = useState({ email: "" });
   const [submitting, setSubmitting] = useState(false);
 
   const emailId = useId();
 
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL;
-  if (!apiBase) throw new Error("API_BASE_URL is not defined");
-
-  // Fetch users
+  // Fetch all users
   const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${apiBase}/users`);
+      const response = await client.users.$get();
       if (!response.ok) throw new Error("Failed to fetch users");
-      const data = await response.json();
+      const { data } = await response.json();
       setUsers(data);
       setError(null);
     } catch (err) {
@@ -36,41 +37,32 @@ export default function UsersPage() {
     } finally {
       setLoading(false);
     }
-  }, [apiBase]);
+  }, []);
 
   const fetchUnits = useCallback(async () => {
-    const res = await fetch(`${apiBase}/units`);
-    if (res.ok) setUnits(await res.json());
-  }, [apiBase]);
+    const res = await (await client.units.$get()).json();
+    if (res.ok) setUnits(res.data);
+  }, []);
 
   // Create user
-  const createUser = async (userData: UserFormData) => {
-    const response = await fetch(`${apiBase}/users`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(userData),
-    });
-    if (!response.ok) throw new Error("Failed to create user");
-    return response.json();
+  const createUserSchema = z.object({ email: z.email() });
+  const createUser = (userData: CreateUserPayload) => {
+    // Client-side guard mirroring API validator
+    createUserSchema.parse(userData);
+    return client.users.$post({ json: { email: userData.email } });
   };
 
   // Update user
-  const updateUser = async (id: string, userData: UserFormData) => {
-    const response = await fetch(`${apiBase}/users/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(userData),
-    });
-    if (!response.ok) throw new Error("Failed to update user");
-    return response.json();
+  const updateUserSchema = z.object({ email: z.email() });
+  const updateUser = async (id: string, userData: CreateUserPayload) => {
+    updateUserSchema.parse(userData);
+    return await client.users[":id"].$put({ param: { id }, json: { email: userData.email } });
   };
 
   // Delete user
   const deleteUser = async (id: string) => {
-    const response = await fetch(`${apiBase}/users/${id}`, {
-      method: "DELETE",
-    });
-    if (!response.ok) throw new Error("Failed to delete user");
+    const res = await client.users[":id"].$delete({ param: { id } });
+    if (!res.ok) throw new Error("Failed to delete user");
   };
 
   // Handle form submission
@@ -128,71 +120,28 @@ export default function UsersPage() {
   }, [fetchUsers, fetchUnits]);
 
   return (
-    <div style={{ fontFamily: "system-ui", padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-        <h1 style={{ margin: 0, color: "#333" }}>User Management</h1>
-        <button
-          type="button"
-          onClick={() => setShowForm(true)}
-          style={{
-            backgroundColor: "#007bff",
-            color: "white",
-            border: "none",
-            padding: "10px 20px",
-            borderRadius: "6px",
-            cursor: "pointer",
-            fontSize: "14px",
-            fontWeight: "500",
-          }}
-        >
+    <div className={`${ui.container} ${ui.main} ${ui.max1200} ${ui.mxAuto}`}>
+      <div className={`${ui.flexRow} ${ui.justifyBetween} ${ui.alignCenter} ${ui.mb24}`}>
+        <h1 className={ui.mt0}>User Management</h1>
+        <button type="button" onClick={() => setShowForm(true)} className={`${ui.btn} ${ui.btnPrimary}`}>
           Add New User
         </button>
       </div>
 
       {error && (
-        <div
-          style={{
-            backgroundColor: "#f8d7da",
-            color: "#721c24",
-            padding: "12px",
-            borderRadius: "6px",
-            marginBottom: "24px",
-            border: "1px solid #f5c6cb",
-          }}
-        >
+        <div className={ui.panel} style={{ background: "#f8d7da", borderColor: "#f5c6cb", color: "#721c24" }}>
           {error}
         </div>
       )}
 
       {/* User Form Modal */}
       {showForm && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: "white",
-              padding: "24px",
-              borderRadius: "8px",
-              width: "400px",
-              maxWidth: "90vw",
-            }}
-          >
-            <h2 style={{ margin: "0 0 20px 0" }}>{editingUser ? "Edit User" : "Add New User"}</h2>
+        <div className={ui.overlay}>
+          <div className={ui.modal}>
+            <h2 style={{ margin: 0, marginBottom: 20 }}>{editingUser ? "Edit User" : "Add New User"}</h2>
             <form onSubmit={handleSubmit}>
               <div style={{ marginBottom: "16px" }}>
-                <label htmlFor={emailId} style={{ display: "block", marginBottom: "6px", fontWeight: "500" }}>
+                <label htmlFor={emailId} style={{ display: "block", marginBottom: "6px", fontWeight: 500 }}>
                   Email *
                 </label>
                 <input
@@ -201,45 +150,17 @@ export default function UsersPage() {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
-                  style={{
-                    width: "100%",
-                    padding: "8px 12px",
-                    border: "1px solid #ddd",
-                    borderRadius: "4px",
-                    fontSize: "14px",
-                  }}
+                  className={ui.input}
                 />
               </div>
               <div style={{ marginBottom: "20px" }}>
                 {/* Name field removed (schema now uses displayName/spiritualName elsewhere) */}
               </div>
-              <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
-                <button
-                  type="button"
-                  onClick={handleCancel}
-                  style={{
-                    padding: "8px 16px",
-                    border: "1px solid #ddd",
-                    backgroundColor: "white",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                  }}
-                >
+              <div className={`${ui.flexRowGap12} ${ui.justifyEnd}`}>
+                <button type="button" onClick={handleCancel} className={`${ui.btn} ${ui.btnOutline}`}>
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  style={{
-                    padding: "8px 16px",
-                    backgroundColor: "#007bff",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: submitting ? "not-allowed" : "pointer",
-                    opacity: submitting ? 0.6 : 1,
-                  }}
-                >
+                <button type="submit" disabled={submitting} className={`${ui.btn} ${ui.btnPrimary}`}>
                   {submitting ? "Saving..." : editingUser ? "Update" : "Create"}
                 </button>
               </div>
@@ -250,28 +171,23 @@ export default function UsersPage() {
 
       {/* Users Table */}
       {loading ? (
-        <div style={{ textAlign: "center", padding: "40px", color: "#666" }}>Loading users...</div>
+        <div className={ui.textMuted} style={{ textAlign: "center", padding: 40 }}>
+          Loading users...
+        </div>
       ) : users.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "40px", color: "#666" }}>
+        <div className={ui.textMuted} style={{ textAlign: "center", padding: 40 }}>
           No users found. Click "Add New User" to create one.
         </div>
       ) : (
-        <div
-          style={{
-            backgroundColor: "white",
-            borderRadius: "8px",
-            overflow: "hidden",
-            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-          }}
-        >
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <div className={ui.card}>
+          <table className={ui.table}>
             <thead>
-              <tr style={{ backgroundColor: "#f8f9fa" }}>
-                <th style={{ padding: "12px", textAlign: "left", borderBottom: "1px solid #dee2e6" }}>User</th>
-                <th style={{ padding: "12px", textAlign: "left", borderBottom: "1px solid #dee2e6" }}>Unit</th>
-                <th style={{ padding: "12px", textAlign: "left", borderBottom: "1px solid #dee2e6" }}>Mentor</th>
-                <th style={{ padding: "12px", textAlign: "left", borderBottom: "1px solid #dee2e6" }}>Mentees</th>
-                <th style={{ padding: "12px", textAlign: "center", borderBottom: "1px solid #dee2e6" }}>Actions</th>
+              <tr className={ui.tableHead}>
+                <th className={ui.th}>User</th>
+                <th className={ui.th}>Unit</th>
+                <th className={ui.th}>Mentor</th>
+                <th className={ui.th}>Mentees</th>
+                <th className={`${ui.th} ${ui.textCenter}`}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -280,16 +196,17 @@ export default function UsersPage() {
                 const unitLabel = unit ? unit.name : user.unitId || "-";
                 const display = user.displayName || user.spiritualName || user.fullName || "-";
                 return (
-                  <tr key={user.id} style={{ borderBottom: "1px solid #dee2e6" }}>
-                    <td style={{ padding: "12px" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <tr key={user.id}>
+                    <td className={ui.td}>
+                      <div className={`${ui.flexRowGap8} ${ui.alignCenter}`}>
                         <Link href={`/users/${user.id}`} style={{ textDecoration: "none", color: "inherit" }}>
                           <div
+                            className={""}
                             style={{
+                              backgroundImage: user.photoUrl ? `url(${user.photoUrl})` : "url(/images/user.png)",
                               width: 36,
                               height: 36,
                               borderRadius: "50%",
-                              backgroundImage: user.photoUrl ? `url(${user.photoUrl})` : "url(/images/user.png)",
                               backgroundSize: "cover",
                               backgroundPosition: "center",
                               border: "1px solid #ccc",
@@ -298,21 +215,23 @@ export default function UsersPage() {
                           />
                         </Link>
                         <div style={{ display: "grid" }}>
-                          <Link href={`/users/${user.id}`} style={{ color: "#0366d6", textDecoration: "none" }}>
+                          <Link href={`/users/${user.id}`} className={ui.link}>
                             {display}
                           </Link>
-                          <span style={{ fontSize: 12, color: "#555" }}>{user.email}</span>
+                          <span className={ui.textMuted} style={{ fontSize: 12 }}>
+                            {user.email}
+                          </span>
                         </div>
                       </div>
                     </td>
-                    <td style={{ padding: "12px" }}>
+                    <td className={ui.td}>
                       {user.unitId && unit ? (
                         <EntityChip id={unit.id} type="unit" name={unitLabel} href={`/units/${unit.id}`} />
                       ) : (
                         <span style={{ color: "#999" }}>-</span>
                       )}
                     </td>
-                    <td style={{ padding: "12px" }}>
+                    <td className={ui.td}>
                       {(() => {
                         if (!user.mentorId) return "-";
                         const mentor = users.find((u) => u.id === user.mentorId);
@@ -329,36 +248,16 @@ export default function UsersPage() {
                         );
                       })()}
                     </td>
-                    <td style={{ padding: "12px" }}>{user.menteeIds?.length ?? 0}</td>
-                    <td style={{ padding: "12px", textAlign: "center" }}>
-                      <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
-                        <button
-                          type="button"
-                          onClick={() => handleEdit(user)}
-                          style={{
-                            padding: "4px 8px",
-                            backgroundColor: "#ffc107",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "4px",
-                            cursor: "pointer",
-                            fontSize: "12px",
-                          }}
-                        >
+                    <td className={ui.td}>{user.menteeIds?.length ?? 0}</td>
+                    <td className={`${ui.td} ${ui.textCenter}`}>
+                      <div className={`${ui.flexRowGap8} ${ui.justifyCenter}`}>
+                        <button type="button" onClick={() => handleEdit(user)} className={`${ui.btn} ${ui.btnWarn}`}>
                           Edit
                         </button>
                         <button
                           type="button"
                           onClick={() => handleDelete(user)}
-                          style={{
-                            padding: "4px 8px",
-                            backgroundColor: "#dc3545",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "4px",
-                            cursor: "pointer",
-                            fontSize: "12px",
-                          }}
+                          className={`${ui.btn} ${ui.btnDanger}`}
                         >
                           Delete
                         </button>

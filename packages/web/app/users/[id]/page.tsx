@@ -1,9 +1,11 @@
 "use client";
 
+import { EntityChip } from "components/EntityChip";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { EntityChip } from "../../../components/EntityChip";
+import { client } from "services/http";
+import ui from "styles/ui.module.scss";
 
 interface UserDto {
   id: string;
@@ -19,8 +21,7 @@ interface UserDto {
   menteeIds: string[];
 }
 
-const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL;
-if (!apiBase) throw new Error("API_BASE_URL is not defined");
+// using Hono client
 
 export default function UserProfileView() {
   const params = useParams();
@@ -31,33 +32,31 @@ export default function UserProfileView() {
 
   useEffect(() => {
     (async () => {
-      const res = await fetch(`${apiBase}/users/${id}`);
+      const res = await client.users[":id"].$get({ param: { id } });
       if (res.ok) setUser(await res.json());
-      const all = await fetch(`${apiBase}/users`)
-        .then((r) => r.json())
-        .catch(() => []);
-      setAllUsers(all);
+      const allRes = await (await client.users.$get()).json();
+      setAllUsers(allRes.data);
     })();
   }, [id]);
 
-  if (!user) return <main style={{ padding: 24 }}>Loading...</main>;
+  if (!user) return <main className={ui.main}>Loading...</main>;
 
   const mentor = user.mentorId ? allUsers.find((u) => u.id === user.mentorId) : null;
   const mentees = user.menteeIds.map((mid) => allUsers.find((u) => u.id === mid)).filter(Boolean) as UserDto[];
 
   return (
-    <main style={{ fontFamily: "system-ui", padding: 24, maxWidth: 820 }}>
-      <Link href="/users" style={{ color: "#0366d6", textDecoration: "none" }}>
+    <main className={`${ui.container} ${ui.main} ${ui.max820}`}>
+      <Link href="/users" className={ui.link}>
         ← Back to users
       </Link>
-      <h1 style={{ marginTop: 12 }}>{user.displayName || user.spiritualName || user.email}</h1>
-      <p style={{ marginTop: -8, color: "#666" }}>{user.email}</p>
-      <section style={{ display: "grid", gap: 12, maxWidth: 500 }}>
+      <h1 className={ui.mt12}>{user.displayName || user.spiritualName || user.email}</h1>
+      <p className={`${ui.mtNeg8} ${ui.textMuted}`}>{user.email}</p>
+      <section className={ui.gridGap12} style={{ maxWidth: 500 }}>
         <Field label="Display Name" value={user.displayName || ""} />
         <Field label="Spiritual Name" value={user.spiritualName || ""} />
         <Field label="Full Name" value={user.fullName || ""} />
-        <div style={{ display: "grid", gap: 4 }}>
-          <span style={{ fontSize: 12, fontWeight: 600 }}>Mentor</span>
+        <div className={ui.gridGap4}>
+          <span className={ui.labelSm}>Mentor</span>
           {mentor ? (
             <EntityChip
               id={mentor.id}
@@ -70,12 +69,12 @@ export default function UserProfileView() {
             <span style={{ color: "#555" }}>—</span>
           )}
         </div>
-        <div style={{ display: "grid", gap: 4 }}>
-          <span style={{ fontSize: 12, fontWeight: 600 }}>Mentees</span>
+        <div className={ui.gridGap4}>
+          <span className={ui.labelSm}>Mentees</span>
           {mentees.length === 0 ? (
             <span style={{ color: "#555" }}>None</span>
           ) : (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            <div className={ui.flexWrapGap8}>
               {mentees.map((m) => (
                 <EntityChip
                   key={m.id}
@@ -97,11 +96,11 @@ export default function UserProfileView() {
 function Field({ label, value }: { label: string; value: string }) {
   const id = label.replace(/\s+/g, "-").toLowerCase();
   return (
-    <div style={{ display: "grid", gap: 4 }}>
-      <label htmlFor={id} style={{ fontSize: 12, fontWeight: 600 }}>
+    <div className={ui.gridGap4}>
+      <label htmlFor={id} className={ui.labelSm}>
         {label}
       </label>
-      {<span style={{ padding: "4px 0" }}>{value || "—"}</span>}
+      {<span className={ui.py4}>{value || "—"}</span>}
     </div>
   );
 }

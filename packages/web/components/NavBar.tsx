@@ -1,10 +1,12 @@
 "use client";
-import { useAuth } from "./AuthContext";
+
+import { useAuth } from "contexts/AuthContext";
+import styles from "styles/ui.module.scss";
 
 export default function NavBar() {
   const { token, logout } = useAuth();
   return (
-    <nav style={{ padding: 16, borderBottom: "1px solid #eee", display: "flex", gap: 16, fontFamily: "system-ui" }}>
+    <nav className={styles.navbar}>
       <a href="/">Home</a>
       {!token && <a href="/login">Login</a>}
       {!token && <a href="/register">Register</a>}
@@ -12,7 +14,7 @@ export default function NavBar() {
       {<a href="/users">Users</a>}
       {<a href="/units">Units</a>}
       {token && (
-        <button type="button" onClick={logout} style={{ marginLeft: "auto" }}>
+        <button type="button" onClick={logout} className={styles.navbarLogout}>
           Logout
         </button>
       )}
