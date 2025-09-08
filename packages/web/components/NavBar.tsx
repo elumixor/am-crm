@@ -1,23 +1,33 @@
 "use client";
 
-import { useAuth } from "contexts/AuthContext";
+import AuthSection from "components/AuthSection";
+import Image from "next/image";
+import Link from "next/link";
 import styles from "styles/ui.module.scss";
 
 export default function NavBar() {
-  const { token, logout } = useAuth();
   return (
     <nav className={styles.navbar}>
-      <a href="/">Home</a>
-      {!token && <a href="/login">Login</a>}
-      {!token && <a href="/register">Register</a>}
-      {token && <a href="/profile">My Profile</a>}
-      {<a href="/users">Users</a>}
-      {<a href="/units">Units</a>}
-      {token && (
-        <button type="button" onClick={logout} className={styles.navbarLogout}>
-          Logout
-        </button>
-      )}
+      <div className={styles.navbarLeft}>
+        <Link href="/" className={styles.logoLink}>
+          <Image src="/images/logo.png" alt="App Logo" width={32} height={32} className={styles.logo} />
+        </Link>
+        <Link href="/mentees" className={styles.navButton}>
+          <Image src="/images/mentorship.png" alt="Mentorship" width={20} height={20} />
+          Mentorship
+        </Link>
+        <Link href="/users" className={styles.navButton}>
+          <Image src="/images/people.png" alt="Users" width={20} height={20} />
+          Users
+        </Link>
+        <Link href="/units" className={styles.navButton}>
+          <Image src="/images/unit.png" alt="Units" width={20} height={20} />
+          Units
+        </Link>
+      </div>
+      <div className={styles.navbarRight}>
+        <AuthSection />
+      </div>
     </nav>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { EntityChip } from "components/EntityChip";
+import { useAuth } from "contexts/AuthContext";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -18,14 +19,25 @@ interface UserDto {
   photoUrl: string | null;
   unitId: string | null;
   mentorId: string | null;
-  menteeIds: string[];
+  mentees: { id: string }[];
 }
 
 // using Hono client
 
+function LogoutButton() {
+  const { logout } = useAuth();
+
+  return (
+    <button type="button" onClick={logout} className={`${ui.btn} ${ui.btnDanger}`}>
+      Logout
+    </button>
+  );
+}
+
 export default function UserProfileView() {
   const params = useParams();
   const id = params?.id as string;
+  const { userId } = useAuth();
 
   const [user, setUser] = useState<UserDto | null>(null);
   const [allUsers, setAllUsers] = useState<UserDto[]>([]);
@@ -42,13 +54,24 @@ export default function UserProfileView() {
   if (!user) return <main className={ui.main}>Loading...</main>;
 
   const mentor = user.mentorId ? allUsers.find((u) => u.id === user.mentorId) : null;
-  const mentees = user.menteeIds.map((mid) => allUsers.find((u) => u.id === mid)).filter(Boolean) as UserDto[];
+  const mentees = user.mentees.map(({ id }) => allUsers.find((u) => u.id === id)).filter(Boolean) as UserDto[];
+  const isOwnProfile = userId === id;
 
   return (
     <main className={`${ui.container} ${ui.main} ${ui.max820}`}>
       <Link href="/users" className={ui.link}>
         ← Back to users
       </Link>
+      {isOwnProfile && (
+        <div style={{ float: "right", display: "flex", gap: "8px" }}>
+          <Link href={`/users/${id}/edit`}>
+            <button type="button" className={`${ui.btn} ${ui.btnPrimary}`}>
+              Edit
+            </button>
+          </Link>
+          <LogoutButton />
+        </div>
+      )}
       <h1 className={ui.mt12}>{user.displayName || user.spiritualName || user.email}</h1>
       <p className={`${ui.mtNeg8} ${ui.textMuted}`}>{user.email}</p>
       <section className={ui.gridGap12} style={{ maxWidth: 500 }}>

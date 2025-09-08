@@ -82,7 +82,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Reset password
   const resetPassword = useCallback(async (email: string, password: string) => {
-    await client.auth.reset.$post({ json: { email, password } });
+    const response = await client.auth.reset.$post({ json: { email, password } });
+    if (!response.ok) throw new Error(`Failed to reset password: ${await response.text()}`);
   }, []);
 
   return (
