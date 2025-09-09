@@ -22,8 +22,6 @@ interface UserDto {
   mentees: { id: string }[];
 }
 
-// using Hono client
-
 function LogoutButton() {
   const { logout } = useAuth();
 
@@ -43,7 +41,7 @@ export default function UserProfileView() {
   const [allUsers, setAllUsers] = useState<UserDto[]>([]);
 
   useEffect(() => {
-    (async () => {
+    void (async () => {
       const res = await client.users[":id"].$get({ param: { id } });
       if (res.ok) setUser(await res.json());
       const allRes = await (await client.users.$get()).json();

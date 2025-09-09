@@ -14,5 +14,5 @@
       }
     ]
   },
-  "include": ["app", "components", "testing", ".next/types/**/*.ts", "contexts/AuthContext.tsx"]
+  "include": ["app", "components", "testing", ".next/types/**/*.ts", "contexts/AuthContext/AuthContext.tsx"]
 }

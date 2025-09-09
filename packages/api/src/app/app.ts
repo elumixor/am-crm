@@ -3,14 +3,19 @@ import { cors } from "hono/cors";
 import { showRoutes } from "hono/dev";
 import { logger } from "hono/logger";
 import { env } from "services/env";
-import { auth, sessionMiddleware } from "./routes/auth";
-import { signedUrl } from "./routes/photo";
-import { profile } from "./routes/profile";
+import { auth } from "./routes/auth";
+import { signedUrl } from "./routes/signed-url";
 import { units } from "./routes/units";
 import { users } from "./routes/users";
 
 const app = new Hono()
   // Middlewares:
+  // Error handling
+  .onError((err, c) => {
+    console.error(`Error: ${err.message}`);
+    const status = Reflect.get(err, "status") ?? 500;
+    return c.json({ message: err.message }, status);
+  })
   // Logger
   .use(logger())
   // CORS
@@ -31,8 +36,6 @@ const app = new Hono()
       credentials: true,
     }),
   )
-  // Session middleware for authorized routes
-  .use("/me/*", sessionMiddleware())
   // Add some basic health checks
   .get("/", (c) => c.json({ ok: true }))
   .get("/health", (c) => c.json({ status: "ok" }))
@@ -40,7 +43,6 @@ const app = new Hono()
   .route("/signedUrl", signedUrl)
   // Auth routes
   .route("/auth", auth)
-  .route("/me", profile)
   // Users routes
   .route("/users", users)
   // Units routes

@@ -10,6 +10,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum PreferredNameType {
+  spiritual
+  worldly
+  custom
+}
+
 model User {
   id           String  @id @default(cuid())
   email        String  @unique
@@ -17,8 +23,10 @@ model User {
   passwordHash String?
 
   // Profile fields
-  fullName          String?
   spiritualName     String?
+  worldlyName       String?
+  preferredName     String?
+  preferredNameType PreferredNameType?
   displayName       String?
   telegram          String?
   whatsapp          String?
@@ -43,8 +51,18 @@ model User {
   acarya    User?   @relation("Acarya", fields: [acaryaId], references: [id])
   initiates User[]  @relation("Acarya")
 
-  // Lesson progression stored as JSON array of objects { lesson: Int, receivedAt: DateTime? }
-  lessons Json @default("[]")
+  // Lessons relation
+  lessons UserLesson[]
+}
+
+model UserLesson {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson     Int // 0 = nama mantra, 1-6 = lessons 1-6
+  receivedAt DateTime?
+
+  @@unique([userId, lesson])
 }
 
 model Unit {

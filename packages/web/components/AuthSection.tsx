@@ -1,59 +1,37 @@
 "use client";
 
 import { useAuth } from "contexts/AuthContext";
-import Image from "next/image";
+import { useSignedUrl } from "lib/signed-url";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { client } from "services/http";
+import { useCallback, useEffect, useState } from "react";
+import { client, validJson } from "services/http";
 import styles from "./AuthSection.module.scss";
 
-interface UserDto {
-  id: string;
-  photoUrl: string | null;
-}
-
 export default function AuthSection() {
-  const { token, userId, loading } = useAuth();
-  const [user, setUser] = useState<UserDto | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const { userId, loaded } = useAuth();
+  const [user, setUser] = useState<{ id: string; photoKey: string | null } | null>(null);
+  const [userProfilePictureUrl, setKey] = useSignedUrl({ defaultUrl: "/images/user.png" });
 
-  // Track when component has mounted to prevent hydration issues
+  useCallback(() => {
+    console.log(userId);
+  }, [userId]);
+
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return; // Don't fetch until mounted
-
-    if (token && userId) {
-      (async () => {
+    if (userId) {
+      void (async () => {
         const res = await client.users[":id"].$get({ param: { id: userId } });
-        if (res.ok) {
-          const userData = await res.json();
-          setUser({ id: userData.id, photoUrl: userData.photoUrl });
-        }
+        const { id, photoKey } = await validJson(res);
+        setUser({ id, photoKey });
+        setKey(photoKey ?? undefined);
       })();
-    } else {
-      setUser(null);
-    }
-  }, [token, userId, mounted]);
+    } else setUser(null);
+  }, [userId]);
 
-  // Show default sign in/up buttons until component is mounted and auth is resolved
-  if (!mounted || loading) {
-    return (
-      <div className={styles.authSection}>
-        <Link href="/login" className={styles.authButton}>
-          Sign In
-        </Link>
-        <Link href="/register" className={styles.authButton}>
-          Sign Up
-        </Link>
-      </div>
-    );
-  }
+  // Hide everything if not loaded yet
+  if (!loaded) return;
 
-  // User is not authenticated
-  if (!token) {
+  // Show default sign in/up buttons until auth is resolved
+  if (!userId) {
     return (
       <div className={styles.authSection}>
         <Link href="/login" className={styles.authButton}>
@@ -79,13 +57,12 @@ export default function AuthSection() {
   return (
     <div className={styles.authSection}>
       <Link href={`/users/${userId}`} className={styles.profileLink}>
-        <Image
-          src={user.photoUrl || "/images/user.png"}
-          alt="Profile"
-          width={32}
-          height={32}
-          className={styles.profileImage}
-        />
+        <button
+          type="button"
+          className={styles.profilePicture}
+          style={{ backgroundImage: `url(${userProfilePictureUrl})` }}
+          aria-label="Change profile picture"
+        ></button>
       </Link>
     </div>
   );

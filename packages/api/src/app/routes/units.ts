@@ -1,4 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
+import { ApiError } from "errors";
 import { Hono } from "hono";
 import { prisma } from "services/prisma";
 import { zId, zPaginator } from "utils/validators";
@@ -20,7 +21,7 @@ export const units = new Hono()
   .get("/:id", zId, async (c) => {
     const { id } = c.req.valid("param");
     const unit = await prisma.unit.findUnique({ where: { id }, ...unitSelect });
-    if (!unit) return c.text("not found", 404);
+    if (!unit) throw new ApiError("Unit not found", 404);
     return c.json(unit);
   })
   // Create unit
@@ -45,18 +46,20 @@ export const units = new Hono()
     zId,
     zValidator(
       "json",
-      z.object({
-        name: z.string().min(1).optional(),
-        description: z.string().min(1).optional(),
-        userIds: z.array(z.string()).optional(),
-      }),
+      z
+        .object({
+          name: z.string().min(1),
+          description: z.string().nullable(),
+          userIds: z.array(z.string()),
+        })
+        .partial(),
     ),
     async (c) => {
       const { id } = c.req.valid("param");
       const { name, description, userIds } = c.req.valid("json");
 
       const unit = await prisma.unit.update({ where: { id }, data: { name, description } });
-      if (!unit) return c.text("not found", 404);
+      if (!unit) throw new ApiError("Unit not found", 404);
 
       // Modify user memberships if userIds provided
       if (userIds) {
@@ -75,7 +78,7 @@ export const units = new Hono()
         include: { users: { select: { id: true } } },
       });
 
-      if (!withUsers) return c.text("not found", 404);
+      if (!withUsers) throw new ApiError("Unit not found after update", 500);
       return c.json(withUsers);
     },
   )

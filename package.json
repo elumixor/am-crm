@@ -12,7 +12,7 @@
     "test:ci": "dotenv -e .env -- turbo run test --only",
     "lint": "biome lint",
     "format": "biome format --write",
-    "migrate": "dotenv -e .env -- turbo db:migrate",
+    "migrate": "dotenv -e .env -- prisma migrate dev --name=init --schema=./packages/db/prisma/schema.prisma",
     "migrate:deploy": "dotenv -e .env -- turbo db:migrate:deploy",
     "generate": "dotenv -e .env -- turbo db:generate"
   },

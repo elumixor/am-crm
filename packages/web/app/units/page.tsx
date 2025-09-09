@@ -2,7 +2,7 @@
 import type { Unit } from "@am-crm/db";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { client } from "services/http";
+import { client, validJson } from "services/http";
 import ui from "styles/ui.module.scss";
 import { z } from "zod";
 
@@ -10,20 +10,23 @@ const createUnitSchema = z.object({ name: z.string().min(1), description: z.stri
 
 export default function UnitsPage() {
   const [units, setUnits] = useState<Unit[]>([]);
-  const [loading, setLoading] = useState(true);
   const [newName, setNewName] = useState("");
+  const [loading, setLoading] = useState(true);
+
   const router = useRouter();
 
   const load = useCallback(async () => {
     setLoading(true);
-    const res = await (await client.units.$get()).json();
-    if (res.ok) setUnits(res as unknown as Unit[]);
+    const response = await client.units.$get();
+    const { data } = await validJson(response);
+    setUnits(data);
     setLoading(false);
   }, []);
 
+  // Load immediately
   useEffect(() => {
-    load();
-  }, [load]);
+    void load();
+  }, []);
 
   async function createUnit() {
     const payload = { name: newName.trim() };
@@ -56,6 +59,7 @@ export default function UnitsPage() {
           Add
         </button>
       </div>
+
       {loading ? (
         <p>Loading...</p>
       ) : units.length === 0 ? (

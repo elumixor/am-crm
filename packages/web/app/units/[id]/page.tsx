@@ -2,47 +2,36 @@
 import { ChipsSelector } from "components/ChipsSelector";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { client } from "services/http";
+import { client, validJson } from "services/http";
 import ui from "styles/ui.module.scss";
 import { z } from "zod";
 
-interface User {
-  id: string;
-  email: string;
-  displayName: string | null;
-  spiritualName: string | null;
-  fullName: string | null;
-  unitId: string | null;
-}
 interface UnitDetail {
   id: string;
   name: string;
   description: string;
-  userIds: string[];
-  users?: User[]; // from detail endpoint
+  users: { id: string }[]; // from detail endpoint
 }
 
-const updateUnitSchema = z.object({
-  name: z.string().min(1),
-  description: z.string().nullable().optional(),
-  userIds: z.array(z.string()),
-});
+const updateUnitSchema = z
+  .object({
+    name: z.string().min(1),
+    description: z.string().nullable().optional(),
+    userIds: z.array(z.string()),
+  })
+  .optional();
 
 export default function UnitProfilePage() {
   const params = useParams();
   const router = useRouter();
   const id = params?.id as string;
   const [unit, setUnit] = useState<UnitDetail | null>(null);
-  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    (async () => {
-      const res = await client.units[":id"].$get({ param: { id } });
-      if (res.ok) setUnit(await res.json());
-
-      const usersRes = await (await client.users.$get()).json();
-      if (usersRes.ok) setAllUsers(usersRes.data);
+    void (async () => {
+      const response = await client.units[":id"].$get({ param: { id } });
+      setUnit(await validJson(response));
     })();
   }, [id]);
 
@@ -53,7 +42,7 @@ export default function UnitProfilePage() {
   async function save() {
     if (!unit) return;
     setSaving(true);
-    const payload = { name: unit.name, description: unit.description, userIds: unit.userIds };
+    const payload = { name: unit.name, description: unit.description, userIds: unit.users.map((u) => u.id) };
     updateUnitSchema.parse(payload);
 
     await client.units[":id"].$put({ param: { id: unit.id }, json: payload });
@@ -62,11 +51,6 @@ export default function UnitProfilePage() {
   }
 
   if (!unit) return <main className={ui.main}>Loading...</main>;
-
-  const userItems = allUsers.map((u) => ({
-    id: u.id,
-    label: u.displayName || u.spiritualName || u.fullName || u.email,
-  }));
 
   return (
     <main className={`${ui.container} ${ui.main} ${ui.max800}`}>
@@ -87,13 +71,13 @@ export default function UnitProfilePage() {
             rows={3}
           />
         </label>
-        <ChipsSelector
+        {/* <ChipsSelector
           label="Users"
           selectedIds={unit.userIds}
           items={userItems.map((u) => ({ ...u, href: `/users/${u.id}` }))}
           onChange={(ids) => update("userIds", ids)}
           placeholder="Search users..."
-        />
+        /> */}
         <div className={ui.flexRowGap12}>
           <button type="button" onClick={save} disabled={saving}>
             {saving ? "Saving..." : "Save"}

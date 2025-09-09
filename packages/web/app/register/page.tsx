@@ -7,7 +7,7 @@ import { useId, useState } from "react";
 import ui from "styles/ui.module.scss";
 
 export default function RegisterPage() {
-  const { register, loading, token } = useAuth();
+  const { register, userId } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -15,7 +15,8 @@ export default function RegisterPage() {
   const emailId = useId();
   const passwordId = useId();
 
-  if (!loading && token) router.replace("/profile");
+  const redirect = () => router.replace(`/users/${userId}`);
+  if (!userId) redirect();
 
   return (
     <main className={`${ui.container} ${ui.main} ${ui.flexCenter}`} style={{ minHeight: "80vh" }}>
@@ -26,9 +27,13 @@ export default function RegisterPage() {
           onSubmit={async (e) => {
             e.preventDefault();
             setError(null);
-            const ok = await register(email, password);
-            if (!ok) setError("Registration failed. Please try again.");
-            else router.replace("/profile");
+            try {
+              await register(email, password);
+              redirect();
+            } catch (error) {
+              setError("Registration failed.");
+              throw error;
+            }
           }}
           className={ui.gridGap16}
         >
@@ -60,8 +65,8 @@ export default function RegisterPage() {
               required
             />
           </div>
-          <button type="submit" className={`${ui.btn} ${ui.btnPrimary}`} disabled={loading}>
-            {loading ? "Creating account..." : "Create Account"}
+          <button type="submit" className={`${ui.btn} ${ui.btnPrimary}`}>
+            Create Account
           </button>
         </form>
         <div className={`${ui.textCenter} ${ui.mt24}`}>

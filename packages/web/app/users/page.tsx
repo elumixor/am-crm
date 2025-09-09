@@ -2,181 +2,52 @@
 
 import type { User } from "@am-crm/shared";
 import { EntityChip } from "components/EntityChip";
-import type { InferRequestType } from "hono/client";
 import Link from "next/link";
-import { useCallback, useEffect, useId, useState } from "react";
-import { client } from "services/http";
+import { useCallback, useEffect, useState } from "react";
+import { client, validJson } from "services/http";
 import ui from "styles/ui.module.scss";
-import { z } from "zod";
-
-type CreateUserPayload = InferRequestType<typeof client.users.$post>["json"];
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
   const [units, setUnits] = useState<{ id: string; name: string }[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [showForm, setShowForm] = useState(false);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [formData, setFormData] = useState({ email: "" });
-  const [submitting, setSubmitting] = useState(false);
-
-  const emailId = useId();
 
   // Fetch all users
   const fetchUsers = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await client.users.$get();
-      if (!response.ok) throw new Error("Failed to fetch users");
-      const { data } = await response.json();
-      setUsers(data);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch users");
-    } finally {
-      setLoading(false);
-    }
+    const response = await client.users.$get();
+    const { data } = await validJson(response);
+    setUsers(data);
   }, []);
 
+  // Fetch units
   const fetchUnits = useCallback(async () => {
-    const res = await (await client.units.$get()).json();
-    if (res.ok) setUnits(res.data);
+    const response = await client.units.$get();
+    const { data } = await response.json();
+    setUnits(data);
   }, []);
-
-  // Create user
-  const createUserSchema = z.object({ email: z.email() });
-  const createUser = (userData: CreateUserPayload) => {
-    // Client-side guard mirroring API validator
-    createUserSchema.parse(userData);
-    return client.users.$post({ json: { email: userData.email } });
-  };
-
-  // Update user
-  const updateUserSchema = z.object({ email: z.email() });
-  const updateUser = async (id: string, userData: CreateUserPayload) => {
-    updateUserSchema.parse(userData);
-    return await client.users[":id"].$put({ param: { id }, json: { email: userData.email } });
-  };
-
-  // Delete user
-  const deleteUser = async (id: string) => {
-    const res = await client.users[":id"].$delete({ param: { id } });
-    if (!res.ok) throw new Error("Failed to delete user");
-  };
-
-  // Handle form submission
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.email.trim()) return;
-
-    try {
-      setSubmitting(true);
-      if (editingUser) {
-        await updateUser(editingUser.id, formData);
-      } else {
-        await createUser(formData);
-      }
-      await fetchUsers();
-      setShowForm(false);
-      setEditingUser(null);
-      setFormData({ email: "" });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Operation failed");
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   // Handle delete
   const handleDelete = async (user: User) => {
     if (!confirm(`Are you sure you want to delete ${user.email}?`)) return;
 
-    try {
-      await deleteUser(user.id);
-      await fetchUsers();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete user");
-    }
-  };
-
-  // Handle edit
-  const handleEdit = (user: User) => {
-    setEditingUser(user);
-    setFormData({ email: user.email });
-    setShowForm(true);
-  };
-
-  // Cancel form
-  const handleCancel = () => {
-    setShowForm(false);
-    setEditingUser(null);
-    setFormData({ email: "" });
+    await client.users[":id"].$delete({ param: { id: user.id } });
+    await fetchUsers();
   };
 
   useEffect(() => {
-    fetchUsers();
-    fetchUnits();
+    void fetchUsers();
+    void fetchUnits();
   }, [fetchUsers, fetchUnits]);
 
   return (
     <div className={`${ui.container} ${ui.main} ${ui.max1200} ${ui.mxAuto}`}>
       <div className={`${ui.flexRow} ${ui.justifyBetween} ${ui.alignCenter} ${ui.mb24}`}>
         <h1 className={ui.mt0}>User Management</h1>
-        <button type="button" onClick={() => setShowForm(true)} className={`${ui.btn} ${ui.btnPrimary}`}>
-          Add New User
-        </button>
       </div>
 
-      {error && (
-        <div className={ui.panel} style={{ background: "#f8d7da", borderColor: "#f5c6cb", color: "#721c24" }}>
-          {error}
-        </div>
-      )}
-
-      {/* User Form Modal */}
-      {showForm && (
-        <div className={ui.overlay}>
-          <div className={ui.modal}>
-            <h2 style={{ margin: 0, marginBottom: 20 }}>{editingUser ? "Edit User" : "Add New User"}</h2>
-            <form onSubmit={handleSubmit}>
-              <div style={{ marginBottom: "16px" }}>
-                <label htmlFor={emailId} style={{ display: "block", marginBottom: "6px", fontWeight: 500 }}>
-                  Email *
-                </label>
-                <input
-                  id={emailId}
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required
-                  className={ui.input}
-                />
-              </div>
-              <div style={{ marginBottom: "20px" }}>
-                {/* Name field removed (schema now uses displayName/spiritualName elsewhere) */}
-              </div>
-              <div className={`${ui.flexRowGap12} ${ui.justifyEnd}`}>
-                <button type="button" onClick={handleCancel} className={`${ui.btn} ${ui.btnOutline}`}>
-                  Cancel
-                </button>
-                <button type="submit" disabled={submitting} className={`${ui.btn} ${ui.btnPrimary}`}>
-                  {submitting ? "Saving..." : editingUser ? "Update" : "Create"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
       {/* Users Table */}
-      {loading ? (
+      {users.length === 0 ? (
         <div className={ui.textMuted} style={{ textAlign: "center", padding: 40 }}>
-          Loading users...
-        </div>
-      ) : users.length === 0 ? (
-        <div className={ui.textMuted} style={{ textAlign: "center", padding: 40 }}>
-          No users found. Click "Add New User" to create one.
+          No users found.
         </div>
       ) : (
         <div className={ui.card}>
@@ -250,18 +121,9 @@ export default function UsersPage() {
                     </td>
                     <td className={ui.td}>{user.menteeIds?.length ?? 0}</td>
                     <td className={`${ui.td} ${ui.textCenter}`}>
-                      <div className={`${ui.flexRowGap8} ${ui.justifyCenter}`}>
-                        <button type="button" onClick={() => handleEdit(user)} className={`${ui.btn} ${ui.btnWarn}`}>
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(user)}
-                          className={`${ui.btn} ${ui.btnDanger}`}
-                        >
-                          Delete
-                        </button>
-                      </div>
+                      <button type="button" onClick={() => handleDelete(user)} className={`${ui.btn} ${ui.btnDanger}`}>
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 );

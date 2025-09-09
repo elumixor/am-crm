@@ -7,7 +7,7 @@ import { useId, useState } from "react";
 import ui from "styles/ui.module.scss";
 
 export default function LoginPage() {
-  const { login, loading, token } = useAuth();
+  const { login, userId } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -15,7 +15,9 @@ export default function LoginPage() {
   const emailId = useId();
   const passwordId = useId();
 
-  if (!loading && token) router.replace("/profile");
+  const redirect = () => router.replace(`/users/${userId}`);
+
+  if (userId) redirect();
 
   return (
     <main className={`${ui.container} ${ui.main} ${ui.flexCenter}`} style={{ minHeight: "80vh" }}>
@@ -26,9 +28,13 @@ export default function LoginPage() {
           onSubmit={async (e) => {
             e.preventDefault();
             setError(null);
-            const ok = await login(email, password);
-            if (!ok) setError("Invalid credentials");
-            else router.replace("/profile");
+            try {
+              await login(email, password);
+              redirect();
+            } catch (error) {
+              setError("Log in failed");
+              throw error;
+            }
           }}
           className={ui.gridGap16}
         >
@@ -60,8 +66,8 @@ export default function LoginPage() {
               required
             />
           </div>
-          <button type="submit" className={`${ui.btn} ${ui.btnPrimary}`} disabled={loading}>
-            {loading ? "Signing in..." : "Sign In"}
+          <button type="submit" className={`${ui.btn} ${ui.btnPrimary}`}>
+            Sign In
           </button>
         </form>
         <div className={`${ui.textCenter} ${ui.mt24} ${ui.gridGap8}`}>
