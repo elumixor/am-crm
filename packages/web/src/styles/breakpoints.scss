@@ -1,0 +1,36 @@
+@use "sass:map";
+
+$sm: 640px;
+$md: 768px;
+$lg: 1024px;
+$xl: 1280px;
+
+$breakpoints: (
+  sm: 640px,
+  md: 768px,
+  lg: 1024px,
+  xl: 1280px,
+);
+
+@mixin responsive($breakpoint) {
+  @media (min-width: map.get($breakpoints, $breakpoint)) {
+    @content;
+  }
+}
+
+@each $name, $value in $breakpoints {
+  .w-#{$name} {
+    width: $value;
+  }
+
+  .max-w-#{$name} {
+    max-width: $value;
+  }
+}
+
+.w-full {
+  width: 100%;
+}
+.h-full {
+  height: 100%;
+}

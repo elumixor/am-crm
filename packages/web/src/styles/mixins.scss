@@ -1,0 +1,46 @@
+@use "colors.scss";
+@use "transitions.scss";
+
+// Focus styles
+@mixin focus-ring($color: colors.$primary) {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba($color, 0.1);
+}
+
+// Card styles
+@mixin card {
+  background-color: color(white);
+  border-radius: radius(md);
+  box-shadow: shadow(sm);
+  border: 1px solid color(border-light);
+}
+
+// Container with max-width and centering
+@mixin container($max-width: 1200px) {
+  max-width: $max-width;
+  margin: 0 auto;
+  padding: 0 spacing(md);
+
+  @include responsive(lg) {
+    padding: 0 spacing(lg);
+  }
+}
+
+// Avatar/profile picture styles
+@mixin avatar($size: 40px) {
+  width: $size;
+  height: $size;
+  border-radius: radius(full);
+  background-size: cover;
+  background-position: center;
+  background-color: color(gray-100);
+  border: 1px solid color(border);
+  flex-shrink: 0;
+}
+
+// Truncate text
+@mixin truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

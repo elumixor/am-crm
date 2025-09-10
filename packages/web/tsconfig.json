@@ -7,12 +7,19 @@
     "moduleResolution": "Bundler",
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "incremental": true,
-    "baseUrl": ".",
+    "baseUrl": "./src",
     "plugins": [
       {
         "name": "next"
       }
     ]
   },
-  "include": ["app", "components", "testing", ".next/types/**/*.ts", "contexts/AuthContext/AuthContext.tsx"]
+  "include": [
+    "src/app",
+    "src/components",
+    "testing",
+    ".next/types/**/*.ts",
+    "src/contexts/AuthContext/AuthContext.tsx",
+    "src/lib/can-fail.ts"
+  ]
 }

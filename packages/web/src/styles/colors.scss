@@ -1,0 +1,74 @@
+@use "sass:color";
+
+$light-amount: 15%;
+$dark-amount: 15%;
+
+@function darken($color, $amount) {
+  @return color.adjust($color, $lightness: -$dark-amount);
+}
+@function lighten($color, $amount) {
+  @return color.adjust($color, $lightness: $light-amount);
+}
+
+// Gray scale
+$white: #ffffff;
+$gray: #374151;
+$black: #000000;
+$gray-light: color.mix($white, $gray, 80%);
+$gray-dark: color.mix($black, $gray, 50%);
+
+// Primary
+$primary: #3b82f6;
+$primary-dark: darken($primary, $dark-amount);
+$primary-light: lighten($primary, $light-amount);
+
+// Success
+$success: #22c55e;
+$success-dark: darken($success, $dark-amount);
+$success-light: lighten($success, $light-amount);
+
+// Warning
+$warning: #f59e0b;
+$warning-dark: darken($warning, $dark-amount);
+$warning-light: lighten($warning, $light-amount);
+
+// Danger
+$danger: #ef4444;
+$danger-dark: darken($danger, $dark-amount);
+$danger-light: lighten($danger, $light-amount);
+
+// Border colors
+$border: $gray-light;
+
+$colors: (
+  white: $white,
+  black: $black,
+  gray: $gray,
+  "gray-light": $gray-light,
+  "gray-dark": $gray-dark,
+  primary: $primary,
+  "primary-light": $primary-light,
+  "primary-dark": $primary-dark,
+  success: $success,
+  "success-light": $success-light,
+  "success-dark": $success-dark,
+  warning: $warning,
+  "warning-light": $warning-light,
+  "warning-dark": $warning-dark,
+  danger: $danger,
+  "danger-light": $danger-light,
+  "danger-dark": $danger-dark,
+  border: $border,
+);
+
+@each $name, $value in $colors {
+  .color-#{"" + $name} {
+    color: $value;
+  }
+  .bg-#{"" + $name} {
+    background-color: $value;
+  }
+  .border-#{"" + $name} {
+    border-color: $value;
+  }
+}

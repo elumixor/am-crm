@@ -1,0 +1,22 @@
+$sm: 24px;
+$md: 34px;
+$lg: 42px;
+
+// Icon sizes
+@mixin icon($size: $md) {
+  width: $size;
+  height: $size;
+  flex-shrink: 0;
+}
+
+.icon {
+  &-sm {
+    @include icon($sm);
+  }
+  &-md {
+    @include icon($md);
+  }
+  &-lg {
+    @include icon($lg);
+  }
+}

@@ -1,0 +1,70 @@
+@use "styles/shad-globals.scss";
+
+@use "styles/colors.scss";
+@use "styles/fonts.scss";
+@use "styles/mixins.scss";
+@use "styles/space.scss";
+@use "styles/border.scss";
+@use "styles/flex.scss";
+@use "styles/transitions.scss";
+
+@use "styles/components/button.scss";
+@use "styles/components/container.scss";
+@use "styles/components/forms.scss";
+@use "styles/components/icon.scss";
+@use "styles/components/link.scss";
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  font-family:
+    ui-sans-serif,
+    -apple-system,
+    "system-ui",
+    "Segoe UI Variable Display",
+    "Segoe UI",
+    Helvetica,
+    "Apple Color Emoji",
+    Arial,
+    sans-serif,
+    "Segoe UI Emoji",
+    "Segoe UI Symbol";
+
+  color: colors.$black;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: colors.$white;
+}
+
+// For unstyled links
+
+a {
+  &.unstyled {
+    text-decoration: none;
+    color: colors.$gray;
+  }
+
+  &.colored:hover {
+    transition: all transitions.$medium;
+    color: colors.$primary;
+  }
+}
+
+// Text align
+@each $align in left, center, right {
+  .text-#{$align} {
+    text-align: $align;
+  }
+}
