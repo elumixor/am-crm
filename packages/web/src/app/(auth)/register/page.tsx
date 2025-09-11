@@ -31,6 +31,7 @@ export default function RegisterPage() {
         schema={registerSchema}
         error={error}
         onSubmit={(v) => register(v.email, v.password)}
+        layout="two-column"
       >
         {{
           fields: (

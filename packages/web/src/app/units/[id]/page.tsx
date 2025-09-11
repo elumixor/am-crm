@@ -1,14 +1,13 @@
 "use client";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { client, validJsonInternal } from "services/http";
-import ui from "./styles.module.scss";
 import { z } from "zod";
+import ui from "./styles.module.scss";
 
 interface UnitDetail {
   id: string;
   name: string;
-  description: string;
+  description: string | null;
   users: { id: string }[]; // from detail endpoint
 }
 
@@ -29,8 +28,8 @@ export default function UnitProfilePage() {
 
   useEffect(() => {
     void (async () => {
-      const response = await client.units[":id"].$get({ param: { id } });
-      setUnit(await validJsonInternal(response));
+      // const unit = await validJson(client.units[":id"].$get({ param: { id } }));
+      // setUnit(unit);
     })();
   }, [id]);
 
@@ -44,7 +43,7 @@ export default function UnitProfilePage() {
     const payload = { name: unit.name, description: unit.description, userIds: unit.users.map((u) => u.id) };
     updateUnitSchema.parse(payload);
 
-    await client.units[":id"].$put({ param: { id: unit.id }, json: payload });
+    // await client.units[":id"].$put({ param: { id: unit.id }, json: payload });
     setSaving(false);
     router.refresh();
   }

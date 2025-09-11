@@ -21,7 +21,7 @@ export default function UserEditPage() {
   const fetchUser = React.useCallback(
     async (id: string): Promise<(UserUpdateInput & { id: string }) | null> => {
       const userData = await validJson(client.users[":id"].$get({ param: { id } }));
-      return { ...userData, id }; // Ensure id is included
+      return { ...Object.fromEntries(Object.entries(userData).map(([k, v]) => [k, v ?? ""])), id }; // Ensure id is included
     },
     [client],
   );
@@ -64,10 +64,5 @@ export default function UserEditPage() {
     );
   }
 
-  const handleUpdate = (updatedUser: UserUpdateInput) => {
-    // Handle user update if needed
-    console.log("User updated:", updatedUser);
-  };
-
-  return <UserEditForm user={user} onUpdate={handleUpdate} />;
+  return <UserEditForm user={user} />;
 }

@@ -31,6 +31,7 @@ export default function ResetPasswordPage() {
         schema={resetPasswordSchema}
         error={error}
         onSubmit={(v) => myResetPassword(v.email, v.password)}
+        layout="two-column"
       >
         {{
           fields: (

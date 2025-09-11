@@ -15,7 +15,7 @@ export default function UsersPage() {
   const fetchUsers = useCallback(async () => {
     const response = await client.users.$get();
     const { data } = await validJsonInternal(response);
-    setUsers(data);
+    // setUsers(data);
   }, []);
 
   // Fetch units

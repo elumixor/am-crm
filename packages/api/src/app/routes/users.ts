@@ -19,7 +19,7 @@ export const userSelect = {
 export const users = new Hono()
   // Get all users (paginated)
   .get("/", zPaginator, async (c) => {
-    const { skip, take } = c.req.valid("query");
+    const { skip, take } = c.req.valid("query") ?? {};
 
     const users = await prisma.user.findMany({ ...userSelect, skip, take });
 

@@ -18,8 +18,8 @@ export default function UnitsPage() {
   const load = useCallback(async () => {
     setLoading(true);
     const response = await client.units.$get();
-    const { data } = await validJsonInternal(response);
-    setUnits(data);
+    // const { data } = await validJsonInternal(response);
+    // setUnits(data);
     setLoading(false);
   }, []);
 

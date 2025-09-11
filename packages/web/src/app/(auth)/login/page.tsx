@@ -31,6 +31,7 @@ export default function LoginPage() {
         schema={loginSchema}
         error={error}
         onSubmit={(v) => login(v.email, v.password)}
+        layout="two-column"
       >
         {{
           fields: (

@@ -14,12 +14,5 @@
       }
     ]
   },
-  "include": [
-    "src/app",
-    "src/components",
-    "testing",
-    ".next/types/**/*.ts",
-    "src/contexts/AuthContext/AuthContext.tsx",
-    "src/lib/can-fail.ts"
-  ]
+  "include": ["src/app", "src/components", "testing", ".next/types/**/*.ts"]
 }

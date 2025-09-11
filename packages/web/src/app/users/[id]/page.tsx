@@ -5,7 +5,7 @@ import { useAuth } from "contexts/AuthContext";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { client } from "services/http";
+import { client, validJson } from "services/http";
 import ui from "./styles.module.scss";
 
 interface UserDto {
@@ -51,10 +51,10 @@ export default function UserProfileView() {
 
   useEffect(() => {
     void (async () => {
-      const res = await client.users[":id"].$get({ param: { id } });
-      if (res.ok) setUser(await res.json());
-      const allRes = await (await client.users.$get()).json();
-      setAllUsers(allRes.data);
+      const user = await validJson(client.users[":id"].$get({ param: { id } }));
+      // if (user) setUser(user);
+      // const allRes = await validJson(client.users.$get());
+      // setAllUsers(allRes.data);
     })();
   }, [id]);
 

@@ -7,7 +7,7 @@ import { useAuth } from "contexts/AuthContext";
 import { useAsyncWithError } from "lib";
 import { useRouter } from "next/navigation";
 import { useRef } from "react";
-import { validJsonInternal } from "services/http";
+import { validJson } from "services/http";
 
 const preferredNameOptions = [
   { value: "worldly", label: "Worldly Name" },
@@ -17,10 +17,9 @@ const preferredNameOptions = [
 
 interface UserEditFormProps {
   user: UserUpdateInput & { id: string };
-  onUpdate: (updatedUser: UserUpdateInput) => void;
 }
 
-export function UserEditForm({ user, onUpdate }: UserEditFormProps) {
+export function UserEditForm({ user }: UserEditFormProps) {
   const router = useRouter();
   const { client } = useAuth();
   const ref = useRef<HTMLDivElement>(null);
@@ -29,10 +28,8 @@ export function UserEditForm({ user, onUpdate }: UserEditFormProps) {
     // preferredName logic: only send if custom selected
     if (data.preferredNameType !== "custom") data.preferredName = undefined;
 
-    const response = await client.users[":id"].$put({ param: { id: user.id }, json: data });
-    const updatedUser = await validJsonInternal(response);
+    await validJson(client.users[":id"].$put({ param: { id: user.id }, json: data }));
 
-    onUpdate(updatedUser as UserUpdateInput);
     router.push(`/users/${user.id}`);
   });
 
@@ -51,6 +48,7 @@ export function UserEditForm({ user, onUpdate }: UserEditFormProps) {
       onSubmit={submit}
       defaultValues={defaultValues}
       variant="standalone"
+      layout="two-column"
     >
       {{
         fields: (
@@ -63,13 +61,11 @@ export function UserEditForm({ user, onUpdate }: UserEditFormProps) {
               type="select"
               options={preferredNameOptions}
               label="Preferred Name Type"
-              onChange={(e) => {
-                if (ref.current) {
-                  ref.current.hidden = (e.target as HTMLSelectElement).value !== "custom";
-                }
+              onChange={(value) => {
+                if (ref.current) ref.current.hidden = value !== "custom";
               }}
             />
-            <div ref={ref}>
+            <div ref={ref} hidden={user.preferredNameType !== "custom"}>
               {
                 <FormField
                   name="preferredName"

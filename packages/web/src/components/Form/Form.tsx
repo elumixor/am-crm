@@ -1,13 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "components/shad/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "components/shad/card";
 import { type DefaultValues, useForm } from "react-hook-form";
 import type { ZodObject, z } from "zod";
 import { Form as ShadForm } from "../shad/form";
@@ -22,6 +14,7 @@ interface FormProps<T extends ZodObject> {
   className?: string;
   schema: T;
   variant?: "card" | "standalone";
+  layout?: "single" | "two-column";
   children: {
     fields: React.ReactNode;
     actions?: React.ReactNode;
@@ -37,6 +30,7 @@ export function Form<T extends ZodObject>({
   onSubmit,
   className,
   variant = "card",
+  layout = "single",
   defaultValues = schema.parse({}),
   children: { fields, actions, footer },
 }: FormProps<T>) {
@@ -48,9 +42,9 @@ export function Form<T extends ZodObject>({
 
   if (variant === "standalone") {
     return (
-      <div className={`flex justify-center items-center min-h-screen ${className || ""}`}>
+      <div className={`flex justify-center items-center ${className ?? ""} mt-5`}>
         <ShadForm {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="w-full max-w-2xl space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="w-full max-w-2xl space-y-4 p-4">
             {title && <h1 className="text-2xl font-bold mb-2">{title}</h1>}
             {description && <p className="text-muted-foreground mb-4">{description}</p>}
             {error && (
@@ -60,10 +54,12 @@ export function Form<T extends ZodObject>({
             )}
             {/** biome-ignore lint/suspicious/noExplicitAny: Infer system not strong enough */}
             <FormContext.Provider value={form as any}>
-              <div className="space-y-4">
+              <div
+                className={layout === "two-column" ? "grid grid-cols-1 md:grid-cols-2 gap-4 items-start" : "space-y-4"}
+              >
                 {fields}
               </div>
-              {actions && <div className="w-full mt-4">{actions}</div>}
+              {actions && <div className="w-full mt-4 flex justify-end">{actions}</div>}
               {footer && <div className="w-full text-center">{footer}</div>}
             </FormContext.Provider>
           </form>
@@ -83,9 +79,13 @@ export function Form<T extends ZodObject>({
 
           {/** biome-ignore lint/suspicious/noExplicitAny: Infer system not strong enough */}
           <FormContext.Provider value={form as any}>
-            <CardContent className="space-y-4">
+            <CardContent
+              className={layout === "two-column" ? "grid grid-cols-1 md:grid-cols-2 gap-4 items-start" : "space-y-4"}
+            >
               {error && (
-                <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md p-3 mb-4">
+                <div
+                  className={`text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md p-3 mb-4 ${layout === "two-column" ? "col-span-2" : ""}`}
+                >
                   {error}
                 </div>
               )}

@@ -1,7 +1,8 @@
 {
   "name": "@am-crm/api",
   "version": "0.0.1",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "dependencies": {
     "@am-crm/db": "workspace:*",
     "@am-crm/shared": "workspace:*",
@@ -15,7 +16,10 @@
   },
   "scripts": {
     "dev": "bun run --hot src/index.ts",
-    "build": "bun build --target bun ./src/index.ts --outdir dist",
+    "build": "bun run build:clean && bun run build:types && bun run build:compile",
+    "build:clean": "rm -rf dist",
+    "build:compile": "bun build --target bun --minify ./src/index.ts --outdir dist",
+    "build:types": "tsc --declaration --emitDeclarationOnly",
     "test": "bun test"
   },
   "type": "module"

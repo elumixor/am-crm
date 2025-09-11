@@ -12,7 +12,7 @@ const unitSelect = {
 export const units = new Hono()
   // Get all units (paginated)
   .get("/", zPaginator, async (c) => {
-    const { skip, take } = c.req.valid("query");
+    const { skip, take } = c.req.valid("query") ?? {};
 
     const units = await prisma.unit.findMany({ ...unitSelect, skip, take });
     return c.json({ data: units, pagination: { skip, count: units.length } });

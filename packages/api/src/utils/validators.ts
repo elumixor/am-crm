@@ -6,7 +6,8 @@ export const zPaginator = zValidator(
   // Pagination params
   z
     .object({ skip: z.coerce.number().min(0).default(0), take: z.coerce.number().min(1).max(100).default(100) })
-    .partial(),
+    .partial()
+    .optional(),
 );
 
 export const zId = zValidator("param", z.object({ id: z.string() }));

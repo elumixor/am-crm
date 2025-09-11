@@ -3,7 +3,12 @@
   "compilerOptions": {
     "outDir": "dist",
     "strict": true,
-    "baseUrl": "./src"
+    "baseUrl": "./src",
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": false,
+    "allowImportingTsExtensions": false
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["src/**/*.test.ts", "src/**/*.test.js"]
 }
