@@ -1,6 +1,6 @@
 "use client";
 
-import { Form, FormField } from "components/form";
+import { Form, FormField } from "components/something";
 import { Button } from "components/shad/button";
 import { useAuth } from "contexts/AuthContext";
 import { useAsyncWithError } from "lib";
