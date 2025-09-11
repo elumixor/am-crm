@@ -29,8 +29,8 @@ describe("API", () => {
   });
   it("users returns list", async () => {
     const res = await fetch(`http://localhost:${server.port}/users`);
-    const json = (await res.json()) as User[];
-    expect(Array.isArray(json)).toBe(true);
-    expect(json[0]?.email).toBeDefined();
+    const json = (await res.json()) as { data: User[] };
+    expect(Array.isArray(json.data)).toBe(true);
+    expect(json.data[0]?.email).toBeDefined();
   });
 });

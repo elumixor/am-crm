@@ -2,7 +2,7 @@
 import type { Unit } from "@am-crm/db";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { client, validJson } from "services/http";
+import { client, validJsonInternal } from "services/http";
 import ui from "./styles.module.scss";
 import { z } from "zod";
 
@@ -18,7 +18,7 @@ export default function UnitsPage() {
   const load = useCallback(async () => {
     setLoading(true);
     const response = await client.units.$get();
-    const { data } = await validJson(response);
+    const { data } = await validJsonInternal(response);
     setUnits(data);
     setLoading(false);
   }, []);

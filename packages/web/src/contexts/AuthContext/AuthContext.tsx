@@ -5,7 +5,7 @@ import { hc } from "hono/client";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useLocalStorage } from "react-use";
 import { env } from "services/env";
-import { validJson } from "services/http";
+import { validJsonInternal } from "services/http";
 import { Token } from "./token";
 
 interface AuthState {
@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Login
   const login = useCallback(async (email: string, password: string) => {
     const response = await client.auth.login.$post({ json: { email, password } });
-    const { token: tokenValue } = await validJson(response);
+    const { token: tokenValue } = await validJsonInternal(response);
     const token = new Token(tokenValue);
     setTokenValue(token.value);
     setUserId(token.userId);
@@ -67,7 +67,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Register
   const register = useCallback(async (email: string, password: string) => {
     const response = await client.auth.register.$post({ json: { email, password } });
-    const { token: tokenValue } = await validJson(response);
+    const { token: tokenValue } = await validJsonInternal(response);
     const token = new Token(tokenValue);
     setTokenValue(token.value);
     setUserId(token.userId);
@@ -83,7 +83,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Reset password
   const resetPassword = useCallback(async (email: string, password: string) => {
     const response = await client.auth.reset.$post({ json: { email, password } });
-    await validJson(response);
+    await validJsonInternal(response);
 
     // Logout user after password reset for security reasons
     logout();

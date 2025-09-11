@@ -1,79 +1,73 @@
 "use client";
 
-import { Form, FormField } from "components/Form";
+import type { UserUpdateInput } from "@am-crm/shared";
+import { Button } from "components/shad/button";
 import { useAuth } from "contexts/AuthContext";
-import { useForm } from "lib";
+import { useRetrieved } from "lib/hooks/use-retrieved";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import React from "react";
 import { HashLoader } from "react-spinners";
-
-const preferredNameOptions = ["Worldly Name", "Spiritual Name", "Custom"];
+import { validJson } from "services/http";
+import { UserEditForm } from "./UserEditForm";
 
 export default function UserEditPage() {
-  const { userId: currentUserId, loaded } = useAuth();
+  const { userId: currentUserId, loaded, client } = useAuth();
   const params = useParams();
   const router = useRouter();
 
+  const userId = params.id as string;
+
+  // Create fetch function for users
+  const fetchUser = React.useCallback(
+    async (id: string): Promise<(UserUpdateInput & { id: string }) | null> => {
+      const userData = await validJson(client.users[":id"].$get({ param: { id } }));
+      return { ...userData, id }; // Ensure id is included
+    },
+    [client],
+  );
+
+  const { retrievedObj: user, isLoading, setId } = useRetrieved<UserUpdateInput & { id: string }>(fetchUser);
+
+  // Set the ID when component mounts
+  React.useEffect(() => {
+    if (userId) setId(userId);
+  }, [userId, setId]);
+
   // Show loader while auth state is loading
-  if (!loaded) return <HashLoader />;
+  if (!loaded)
+    return (
+      <main className="container mx-auto px-4 py-8 flex justify-center items-center h-[60vh]">
+        <HashLoader />
+      </main>
+    );
 
   // Only allow editing own profile
-  const userId = params.id as string;
   if (userId !== currentUserId) {
     return (
-      <main className="container text-center mt-lg">
-        <p>You can only edit your own profile.</p>
-        <button type="button" className="link mt-sm" onClick={() => router.back()}>
-          ← Go Back
-        </button>
+      <main className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <p className="text-lg text-muted-foreground">You can only edit your own profile.</p>
+          <Button variant="outline" className="mt-4" onClick={() => router.back()}>
+            ← Go Back
+          </Button>
+        </div>
       </main>
     );
   }
 
-  return <ActualForm userId={userId} />;
-}
-
-function ActualForm({ userId }: { userId: string }) {
-  const [formRef, currentFormData] = useForm();
-
-  // Handle form submission
-  function onSubmit(data: FormData) {
-    console.log(data);
+  // Show loading spinner if object is not yet loaded or if the id is undefined/null
+  if (isLoading || !user) {
+    return (
+      <main className="container mx-auto px-4 py-8 flex justify-center items-center h-[60vh]">
+        <HashLoader />
+      </main>
+    );
   }
 
-  useEffect(() => {
-    console.log("current form state", currentFormData);
-  }, [currentFormData]);
+  const handleUpdate = (updatedUser: UserUpdateInput) => {
+    // Handle user update if needed
+    console.log("User updated:", updatedUser);
+  };
 
-  useEffect(() => {
-    console.log("formRef changed", formRef.current);
-  }, [formRef]);
-
-  return (
-    <Form onSubmit={onSubmit} ref={formRef}>
-      {{
-        fields: (
-          <>
-            <FormField name="Email" type="email" disabled />
-            <FormField name="Worldly Name" defaultValue="Hello" type="text" />
-            <FormField name="Spiritual Name" type="text" />
-            <FormField name="Preferred Name" type="select" options={preferredNameOptions} />
-            {currentFormData["Preferred Name"] === "Custom" && <FormField name="Custom Preferred Name" type="text" />}
-            <FormField name="Telegram" type="text" />
-            <FormField name="WhatsApp" type="text" />
-            <FormField name="Date of Birth" type="date" />
-            <FormField name="Nationality" type="text" />
-            <FormField name="Languages" type="text" />
-            <FormField name="Location" type="text" />
-            <FormField name="Preferred Language" type="text" />
-          </>
-        ),
-        actions: (
-          <button type="submit" className="primary">
-            Save
-          </button>
-        ),
-      }}
-    </Form>
-  );
+  return <UserEditForm user={user} onUpdate={handleUpdate} />;
 }

@@ -3,4 +3,5 @@
 // it can be safely imported in browser bundles.
 
 export * from "./constants";
+export * from "./schemas/user";
 export * from "./utils";

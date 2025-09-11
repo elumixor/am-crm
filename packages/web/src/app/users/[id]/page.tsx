@@ -24,9 +24,17 @@ interface UserDto {
 
 function LogoutButton() {
   const { logout } = useAuth();
+  const router = useRouter();
 
   return (
-    <button type="button" onClick={logout} className={`${ui.btn} ${ui.btnDanger}`}>
+    <button
+      type="button"
+      onClick={() => {
+        logout();
+        router.push("/login");
+      }}
+      className={`${ui.btn} ${ui.btnDanger}`}
+    >
       Logout
     </button>
   );

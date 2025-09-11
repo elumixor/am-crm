@@ -42,7 +42,7 @@ export const EntityChip: React.FC<EntityChipProps> = ({ id, type, name, href, ph
         <span
           className={`${styles.avatar} ${type === "unit" ? styles.avatarUnit : ""}`}
           style={(() => {
-            const s: React.CSSProperties & { ["--size"]?: string } = {
+            const s: React.CSSProperties & { "--size"?: string } = {
               backgroundImage: photoUrl ? `url(${photoUrl})` : undefined,
             };
             s["--size"] = `${size}px`;

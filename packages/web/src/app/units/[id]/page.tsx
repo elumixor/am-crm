@@ -1,7 +1,7 @@
 "use client";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { client, validJson } from "services/http";
+import { client, validJsonInternal } from "services/http";
 import ui from "./styles.module.scss";
 import { z } from "zod";
 
@@ -30,7 +30,7 @@ export default function UnitProfilePage() {
   useEffect(() => {
     void (async () => {
       const response = await client.units[":id"].$get({ param: { id } });
-      setUnit(await validJson(response));
+      setUnit(await validJsonInternal(response));
     })();
   }, [id]);
 

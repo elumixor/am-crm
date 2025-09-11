@@ -13,13 +13,19 @@ export function validResponse<T>(body: T | { error: string }): T {
   validateResponseBody(body);
   return body;
 }
-export async function validJson<T>(response: { json: () => Promise<T | { error: string }> }): Promise<T> {
+export async function validJsonInternal<T>(response: { json: () => Promise<T | { error: string }> }): Promise<T> {
   const body = await response.json();
   return validResponse(body);
 }
 
+export async function validJson<T>(request: Promise<{ json: () => Promise<T | { error: string }> }>): Promise<T> {
+  const response = await request;
+  const result = await validJsonInternal(response);
+  return result;
+}
+
 export async function getSignedUrl(key: string): Promise<string> {
   const signedUrl = await client.signedUrl.$post({ json: { key } });
-  const { url } = await validJson(signedUrl);
+  const { url } = await validJsonInternal(signedUrl);
   return url;
 }

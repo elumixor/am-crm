@@ -1,6 +1,6 @@
 import { tokenRefreshThreshold } from "@am-crm/shared";
 import { jwtDecode } from "jwt-decode";
-import { client, validJson } from "../../services/http";
+import { client, validJson } from "services/http";
 
 /** Encapsulates token management logic */
 export class Token {
@@ -46,8 +46,7 @@ export class Token {
    * @throws If refresh fails
    */
   async refresh() {
-    const response = await client.auth.refresh.$post({ json: { token: this.value } });
-    const { token: newToken } = await validJson(response);
+    const { token: newToken } = await validJson(client.auth.refresh.$post({ json: { token: this.value } }));
     this.value = newToken;
   }
 

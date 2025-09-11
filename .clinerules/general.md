@@ -145,3 +145,11 @@ Good:
   }
 }
 ```
+
+# Running testing commands
+
+- Do not create temporary test files for your code unless explicitly required to do so.
+- To run tests use `bun run test`
+- To check linting issues use `bun run lint`
+- You can also run `bun run format` to run the formatter.
+- Run these commands from the repository root.

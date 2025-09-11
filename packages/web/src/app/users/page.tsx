@@ -4,7 +4,7 @@ import type { User } from "@am-crm/shared";
 import { EntityChip } from "components/EntityChip";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { client, validJson } from "services/http";
+import { client, validJsonInternal } from "services/http";
 import ui from "./styles.module.scss";
 
 export default function UsersPage() {
@@ -14,7 +14,7 @@ export default function UsersPage() {
   // Fetch all users
   const fetchUsers = useCallback(async () => {
     const response = await client.users.$get();
-    const { data } = await validJson(response);
+    const { data } = await validJsonInternal(response);
     setUsers(data);
   }, []);
 

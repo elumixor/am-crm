@@ -48,7 +48,7 @@ describe("Identity & Units API", () => {
     });
 
     const listRes = await fetch(`http://localhost:${apiServer.port}/users`);
-    const list = (await listRes.json()) as User[];
-    expect(Array.isArray(list)).toBe(true);
+    const list = (await listRes.json()) as { data: User[] };
+    expect(Array.isArray(list.data)).toBe(true);
   });
 });

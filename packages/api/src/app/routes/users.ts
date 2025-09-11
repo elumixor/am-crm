@@ -1,4 +1,5 @@
 import { Prisma } from "@am-crm/db";
+import { userUpdateSchema } from "@am-crm/shared";
 import { zValidator } from "@hono/zod-validator";
 import { ApiError } from "errors";
 import { Hono } from "hono";
@@ -38,54 +39,28 @@ export const users = new Hono()
     return c.json(user, 201);
   })
   // Edit user
-  .put(
-    "/:id",
-    zId,
-    zValidator(
-      "json",
-      z
-        .object({
-          email: z.email(),
-          fullName: z.string().nullable(),
-          spiritualName: z.string().nullable(),
-          worldlyName: z.string().nullable(),
-          preferredName: z.string().nullable(),
-          preferredNameType: z.enum(["spiritual", "worldly", "custom"]).nullable(),
-          displayName: z.string().nullable(),
-          telegram: z.string().nullable(),
-          whatsapp: z.string().nullable(),
-          dateOfBirth: z.string().nullable(),
-          nationality: z.string().nullable(),
-          languages: z.string().nullable(),
-          location: z.string().nullable(),
-          preferredLanguage: z.string().nullable(),
-          unitId: z.string().nullable(),
-          mentorId: z.string().nullable(),
-          acaryaId: z.string().nullable(),
-        })
-        .partial(),
-    ),
-    authMiddleware,
-    async (c) => {
-      const { userId: editorId } = requireAuth(c);
+  .put("/:id", zId, zValidator("json", userUpdateSchema), authMiddleware, async (c) => {
+    const { userId: editorId } = requireAuth(c);
 
-      // Check permissions: only admin or self-edit
-      const { id } = c.req.valid("param");
+    // Check permissions: only admin or self-edit
+    const { id } = c.req.valid("param");
 
-      if (editorId !== id) throw new ApiError(`Forbidden to edit user ${id} by ${editorId}`, 403);
+    if (editorId !== id) throw new ApiError(`Forbidden to edit user ${id} by ${editorId}`, 403);
 
-      // Ok, we can edit
-      const body = c.req.valid("json");
+    // Ok, we can edit
+    const body = c.req.valid("json");
 
-      // Filter out undefined values to avoid Prisma issues
-      const updateData = Object.fromEntries(Object.entries(body).filter(([_, value]) => value !== undefined));
+    // Filter out undefined values to avoid Prisma issues
+    const updateData = Object.fromEntries(Object.entries(body).filter(([_, value]) => value !== undefined));
 
-      const user = await prisma.user.update({ where: { id }, data: updateData, ...userSelect });
+    // We should map the date to iso datetime
+    if (updateData.dateOfBirth) updateData.dateOfBirth = new Date(updateData.dateOfBirth).toISOString();
 
-      // Return updated user
-      return c.json(user);
-    },
-  )
+    const user = await prisma.user.update({ where: { id }, data: updateData, ...userSelect });
+
+    // Return updated user
+    return c.json(user);
+  })
   // Upload user photo
   .post("/:id/photo", zId, zValidator("form", z.object({ photo: z.instanceof(File) })), authMiddleware, async (c) => {
     const { userId: editorId } = requireAuth(c);
