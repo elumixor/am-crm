@@ -1,0 +1,35 @@
+name: Manual Deploy DB
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy to"
+        required: true
+        default: "production"
+        type: choice
+        options:
+          - production
+          - staging
+
+env:
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+jobs:
+  deploy_db:
+    name: Deploy DB (Manual)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies (for prisma migrate)
+        run: bun install --frozen-lockfile
+
+      - name: Run Prisma migrations
+        run: bunx prisma migrate deploy --schema packages/db/prisma/schema.prisma

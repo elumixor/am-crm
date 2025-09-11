@@ -49,6 +49,7 @@ jobs:
               - '!docs/**'
             db:
               - 'packages/db/prisma/**'
+              - 'packages/db/prisma/schema.prisma'
               - 'packages/db/src/**'
               - 'packages/db/package.json'
               - 'packages/db/tsconfig.json'
