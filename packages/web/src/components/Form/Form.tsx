@@ -21,6 +21,7 @@ interface FormProps<T extends ZodObject> {
   defaultValues?: z.infer<T>;
   className?: string;
   schema: T;
+  variant?: "card" | "standalone";
   children: {
     fields: React.ReactNode;
     actions?: React.ReactNode;
@@ -35,6 +36,7 @@ export function Form<T extends ZodObject>({
   schema,
   onSubmit,
   className,
+  variant = "card",
   defaultValues = schema.parse({}),
   children: { fields, actions, footer },
 }: FormProps<T>) {
@@ -43,6 +45,32 @@ export function Form<T extends ZodObject>({
     resolver: zodResolver(schema) as any,
     defaultValues: defaultValues as DefaultValues<z.infer<T>>,
   });
+
+  if (variant === "standalone") {
+    return (
+      <div className={`flex justify-center items-center min-h-screen ${className || ""}`}>
+        <ShadForm {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="w-full max-w-2xl space-y-4">
+            {title && <h1 className="text-2xl font-bold mb-2">{title}</h1>}
+            {description && <p className="text-muted-foreground mb-4">{description}</p>}
+            {error && (
+              <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md p-3 mb-4">
+                {error}
+              </div>
+            )}
+            {/** biome-ignore lint/suspicious/noExplicitAny: Infer system not strong enough */}
+            <FormContext.Provider value={form as any}>
+              <div className="space-y-4">
+                {fields}
+              </div>
+              {actions && <div className="w-full mt-4">{actions}</div>}
+              {footer && <div className="w-full text-center">{footer}</div>}
+            </FormContext.Provider>
+          </form>
+        </ShadForm>
+      </div>
+    );
+  }
 
   return (
     <Card className={`w-full max-w-md ${className}`}>

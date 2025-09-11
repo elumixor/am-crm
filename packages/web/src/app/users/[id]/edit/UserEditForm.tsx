@@ -50,7 +50,7 @@ export function UserEditForm({ user, onUpdate }: UserEditFormProps) {
       error={error}
       onSubmit={submit}
       defaultValues={defaultValues}
-      className="max-w-2xl"
+      variant="standalone"
     >
       {{
         fields: (
