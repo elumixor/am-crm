@@ -1,0 +1,23 @@
+@use "styles/breakpoints.scss" as bp;
+@use "styles/space.scss";
+
+.container {
+  width: 100%;
+  margin: 0 auto;
+
+  max-width: bp.$md;
+  padding: space.$sm;
+
+  @include bp.responsive(md) {
+    padding: space.$sm space.$md;
+  }
+
+  @include bp.responsive(lg) {
+    max-width: bp.$lg;
+    padding: space.$sm space.$lg;
+  }
+  @include bp.responsive(xl) {
+    max-width: bp.$xl;
+    padding: space.$sm space.$lg;
+  }
+}

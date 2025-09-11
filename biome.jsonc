@@ -15,9 +15,13 @@
     "enabled": true,
     "rules": {
       "recommended": true,
+      "correctness": {
+        "useExhaustiveDependencies": "off" // doesn't catch many cases and reports false positives
+      },
       "suspicious": {
         "noExplicitAny": "error",
-        "noEmptyBlockStatements": "error"
+        "noEmptyBlockStatements": "error",
+        "noUnknownAtRules": "off" // Tailwind CSS uses custom at-rules
       },
       "complexity": {
         "noUselessCatch": "error"
@@ -26,10 +30,23 @@
         "useKeyWithClickEvents": "off"
       },
       "style": {
+        "useImportType": "error",
+        "noUnusedTemplateLiteral": "error",
         "useConsistentObjectDefinitions": {
           "level": "warn",
           "options": {
             "syntax": "shorthand"
+          }
+        },
+        "useReadonlyClassProperties": "warn",
+        "useGroupedAccessorPairs": "warn"
+      },
+      "nursery": {
+        "noFloatingPromises": "error",
+        "useConsistentTypeDefinitions": {
+          "level": "warn",
+          "options": {
+            "style": "interface"
           }
         }
       }
@@ -43,9 +60,7 @@
   "assist": {
     "enabled": true,
     "actions": {
-      "source": {
-        "organizeImports": "on"
-      }
+      "source": {}
     }
   }
 }

@@ -1,0 +1,77 @@
+@use "styles/breakpoints.scss";
+
+.flex {
+  display: flex;
+
+  &-column {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &-row {
+    display: flex;
+    flex-direction: row;
+  }
+
+  &-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &-start {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  &-end {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  &-wrap {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  &-wrap {
+    display: flex;
+    flex-wrap: wrap;
+  }
+}
+
+@mixin gridBase {
+  display: grid;
+  grid-template-columns: 1fr;
+
+  @media (min-width: breakpoints.$sm) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.grid {
+  @include gridBase;
+
+  &-center {
+    @include gridBase;
+    place-items: center;
+  }
+
+  &-start {
+    @include gridBase;
+    place-items: start;
+  }
+
+  &-end {
+    @include gridBase;
+    place-items: end;
+  }
+}

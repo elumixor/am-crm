@@ -1,0 +1,71 @@
+@use "sass:meta";
+
+$xs: 4px;
+// Small spacing - for tight layouts, gaps between small elements
+$sm: 6px;
+// Medium spacing - for general padding, margins, gaps
+$md: 16px;
+// Large spacing - for section padding, major layout spacing
+$lg: 24px;
+
+// Utility classes for spacing
+$spacings: (
+  sm: $sm,
+  md: $md,
+  lg: $lg,
+);
+
+$directions: (
+  t: top,
+  b: bottom,
+  l: left,
+  r: right,
+  x: (
+    left,
+    right,
+  ),
+  y: (
+    top,
+    bottom,
+  ),
+);
+
+@each $name, $value in $spacings {
+  // All sides
+  .m-#{$name} {
+    margin: $value !important;
+  }
+  .p-#{$name} {
+    padding: $value !important;
+  }
+
+  // Gap
+  .gap-#{$name} {
+    gap: $value !important;
+  }
+
+  // Directional margins and paddings
+  @each $abbr, $dir in $directions {
+    // Margin
+    @if meta.type-of($dir) == "list" {
+      .m#{$abbr}-#{$name} {
+        @each $d in $dir {
+          margin-#{$d}: $value !important;
+        }
+      }
+      // Padding
+      .p#{$abbr}-#{$name} {
+        @each $d in $dir {
+          padding-#{$d}: $value !important;
+        }
+      }
+    } @else {
+      .m#{$abbr}-#{$name} {
+        margin-#{$dir}: $value !important;
+      }
+      .p#{$abbr}-#{$name} {
+        padding-#{$dir}: $value !important;
+      }
+    }
+  }
+}

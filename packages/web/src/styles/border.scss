@@ -1,0 +1,21 @@
+@use "styles/colors.scss";
+
+$radius: 6px;
+$width: 1px;
+
+.border {
+  border: $width solid colors.$border;
+  border-radius: $radius;
+}
+
+.no-border {
+  border: none;
+}
+
+.round {
+  border-radius: 50%;
+}
+
+.rounded {
+  border-radius: $radius;
+}

@@ -1,0 +1,85 @@
+@use "styles/colors.scss";
+@use "styles/fonts.scss";
+@use "styles/transitions.scss";
+@use "styles/mixins.scss";
+@use "sass:color" as sc;
+
+a,
+.link {
+  border: none;
+  padding: 0;
+
+  text-decoration: underline;
+  transition: color transitions.$medium;
+
+  &:hover {
+    color: colors.$primary-dark;
+  }
+
+  &:active {
+    color: colors.$primary-dark;
+  }
+
+  &:focus-visible {
+    @include mixins.focus-ring;
+    outline-offset: 2px;
+  }
+
+  // Variant styles
+  &.danger {
+    color: colors.$danger;
+
+    &:hover {
+      color: colors.$danger-dark;
+    }
+
+    &:active {
+      color: colors.$danger-dark;
+    }
+  }
+
+  &.success {
+    color: colors.$success;
+
+    &:hover {
+      color: colors.$success-dark;
+    }
+
+    &:active {
+      color: colors.$success-dark;
+    }
+  }
+
+  &.warning {
+    color: colors.$warning;
+
+    &:hover {
+      color: colors.$warning-dark;
+    }
+
+    &:active {
+      color: colors.$warning-dark;
+    }
+  }
+
+  &.muted {
+    color: colors.$gray;
+
+    &:hover {
+      color: colors.$gray-dark;
+    }
+
+    &:active {
+      color: colors.$gray-dark;
+    }
+  }
+}
+
+// Disable some default link styles for buttons
+button.link {
+  font-size: fonts.$md;
+  background-color: transparent;
+  &:hover {
+    background-color: transparent;
+  }
+}

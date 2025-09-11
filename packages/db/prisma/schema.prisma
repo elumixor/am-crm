@@ -1,13 +1,19 @@
 // Prisma schema (initial minimal)
 
 generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "linux-arm64-openssl-3.0.x", "linux-arm64-openssl-1.1.x"]
+  provider = "prisma-client-js"
+  output   = "../dist"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+enum PreferredNameType {
+  spiritual
+  worldly
+  custom
 }
 
 model User {
@@ -17,10 +23,12 @@ model User {
   passwordHash String?
 
   // Profile fields
-  fullName          String?
   spiritualName     String?
+  worldlyName       String?
+  preferredName     String?
+  preferredNameType PreferredNameType @default(spiritual)
   displayName       String?
-  telegramHandle    String?
+  telegram          String?
   whatsapp          String?
   photoKey          String?
   dateOfBirth       DateTime?
@@ -43,20 +51,18 @@ model User {
   acarya    User?   @relation("Acarya", fields: [acaryaId], references: [id])
   initiates User[]  @relation("Acarya")
 
-  // Lesson progression stored as JSON array of objects { lesson: Int, receivedAt: DateTime? }
-  lessons Json @default("[]")
-
-  traits UserTrait[]
+  // Lessons relation
+  lessons UserLesson[]
 }
 
-model UserTrait {
-  id     String @id @default(cuid())
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
-  trait  String
+model UserLesson {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson     Int // 0 = nama mantra, 1-6 = lessons 1-6
+  receivedAt DateTime?
 
-  @@unique([userId, trait])
-  @@index([trait])
+  @@unique([userId, lesson])
 }
 
 model Unit {

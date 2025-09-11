@@ -1,10 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
-import { PrismaClient, type User } from "@prisma/client";
+
+import type { User } from "@am-crm/db";
 import { serve } from "bun";
+import { prisma } from "services/prisma";
 import appApi from "./index";
 
 let apiServer: ReturnType<typeof serve>;
-const prisma = new PrismaClient();
 
 beforeAll(async () => {
   await prisma.$connect();
@@ -47,7 +48,7 @@ describe("Identity & Units API", () => {
     });
 
     const listRes = await fetch(`http://localhost:${apiServer.port}/users`);
-    const list = (await listRes.json()) as User[];
-    expect(Array.isArray(list)).toBe(true);
+    const list = (await listRes.json()) as { data: User[] };
+    expect(Array.isArray(list.data)).toBe(true);
   });
 });

@@ -4,17 +4,15 @@
     "jsx": "preserve",
     "outDir": "dist",
     "strict": true,
+    "moduleResolution": "Bundler",
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "incremental": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./*"]
-    },
+    "baseUrl": "./src",
     "plugins": [
       {
         "name": "next"
       }
     ]
   },
-  "include": ["app", "components", "testing", ".next/types/**/*.ts"]
+  "include": ["src/app", "src/components", "testing", ".next/types/**/*.ts"]
 }

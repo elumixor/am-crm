@@ -2,6 +2,7 @@
   "name": "@am-crm/db",
   "version": "0.0.1",
   "type": "module",
+  "main": "dist/index.js",
   "scripts": {
     "db:up": "docker compose -f ./docker-compose.yml up -d db",
     "db:migrate": "prisma migrate dev --name init",
@@ -10,9 +11,9 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@prisma/client": "^5.18.0"
+    "@prisma/client": "^6.15.0"
   },
   "devDependencies": {
-    "prisma": "^5.18.0"
+    "prisma": "^6.15.0"
   }
 }

@@ -1,0 +1,97 @@
+@use "styles/fonts.scss";
+@use "styles/colors.scss";
+@use "styles/space.scss";
+@use "styles/border.scss";
+@use "styles/transitions.scss";
+@use "sass:color" as sc;
+
+// Mixin to lighten and darken colors on hover and active states
+@mixin button-interactive($bg-color, $text-color) {
+  background-color: $bg-color;
+  color: $text-color;
+
+  &:hover:not(:disabled) {
+    background-color: sc.adjust($bg-color, $lightness: 15%);
+  }
+
+  &:active:not(:disabled) {
+    background-color: sc.adjust($bg-color, $lightness: -15%);
+  }
+}
+
+// Default to secondary style
+@mixin default-button-interactive {
+  @include button-interactive(colors.$white, colors.$gray);
+  border: border.$width solid colors.$gray-light;
+
+  &:hover:not(:disabled) {
+    background-color: sc.adjust(colors.$gray-light, $lightness: 10%);
+  }
+}
+
+button,
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: space.$sm;
+  padding: space.$sm;
+  border: border.$width solid colors.$gray-light;
+  border-radius: border.$radius;
+  font-family: inherit;
+  font-weight: fonts.$weight-regular;
+  line-height: 1.25;
+  cursor: pointer;
+  transition: all transitions.$medium;
+  text-decoration: none;
+  white-space: nowrap;
+  font-size: fonts.$sm;
+
+  @include default-button-interactive;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &.secondary {
+    @include default-button-interactive;
+  }
+
+  &.primary {
+    border-color: transparent;
+    @include button-interactive(colors.$primary, colors.$white);
+  }
+
+  &.danger {
+    border-color: transparent;
+    @include button-interactive(colors.$danger, colors.$white);
+  }
+
+  &.warning {
+    border-color: transparent;
+    @include button-interactive(colors.$warning, colors.$black);
+  }
+
+  &.success {
+    border-color: transparent;
+    @include button-interactive(colors.$success, colors.$white);
+  }
+
+  &.no-border {
+    border-color: transparent;
+
+    &:hover:not(:disabled) {
+      border-color: transparent;
+      background-color: sc.adjust(colors.$gray-light, $lightness: 10%);
+    }
+  }
+}

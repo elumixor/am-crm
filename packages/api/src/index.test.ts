@@ -1,9 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
-import { PrismaClient, type User } from "@prisma/client";
+import type { User } from "@am-crm/db";
 import { serve } from "bun";
+import { prisma } from "services/prisma";
 import app from "./index";
 
-const prisma = new PrismaClient();
 let server: ReturnType<typeof serve>;
 
 beforeAll(async () => {
@@ -29,8 +29,8 @@ describe("API", () => {
   });
   it("users returns list", async () => {
     const res = await fetch(`http://localhost:${server.port}/users`);
-    const json = (await res.json()) as User[];
-    expect(Array.isArray(json)).toBe(true);
-    expect(json[0]?.email).toBeDefined();
+    const json = (await res.json()) as { data: User[] };
+    expect(Array.isArray(json.data)).toBe(true);
+    expect(json.data[0]?.email).toBeDefined();
   });
 });

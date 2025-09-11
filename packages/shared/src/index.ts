@@ -2,5 +2,6 @@
 // Keep this package free of server-only dependencies (e.g. Prisma client) so
 // it can be safely imported in browser bundles.
 
-export * from "./data";
+export * from "./constants";
+export * from "./schemas/user";
 export * from "./utils";

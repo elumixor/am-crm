@@ -1,5 +1,3 @@
-# Runtime-only Dockerfile for API
-# Assumes monorepo build already ran (dist artifacts present) before docker build.
 FROM oven/bun:1
 WORKDIR /app
 
