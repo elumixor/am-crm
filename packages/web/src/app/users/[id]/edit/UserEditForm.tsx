@@ -1,7 +1,7 @@
 "use client";
 
 import { type UserUpdateInput, userUpdateSchema } from "@am-crm/shared";
-import { Form, FormField } from "components/something";
+import { Form, FormField } from "components/form";
 import { Button } from "components/shad/button";
 import { useAuth } from "contexts/AuthContext";
 import { useAsyncWithError } from "lib";
