@@ -10,7 +10,6 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@am-crm/api": "workspace:*",
     "@elumixor/frontils": "^2.14.1",
     "@hookform/resolvers": "^5.2.1",
     "@radix-ui/react-avatar": "^1.1.10",
@@ -40,6 +39,7 @@
     "zod": "^4.1.5"
   },
   "devDependencies": {
+    "@am-crm/api": "workspace:*",
     "@happy-dom/global-registrator": "^18.0.1",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.8.0",
