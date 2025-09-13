@@ -1,7 +1,10 @@
 "use client";
+import { Avatar, AvatarFallback, AvatarImage } from "components/shad/avatar";
+import { Badge } from "components/shad/badge";
+import { Button } from "components/shad/button";
+import { cn } from "lib/cn";
 import Link from "next/link";
 import React from "react";
-import styles from "./EntityChip.module.scss";
 
 export interface EntityChipProps {
   id: string;
@@ -37,36 +40,40 @@ export const EntityChip: React.FC<EntityChipProps> = ({ id, type, name, href, ph
   }, [photoUrl, name, id, type]);
 
   return (
-    <span className={styles.chip}>
-      <Link href={href} className={styles.link}>
-        <span
-          className={`${styles.avatar} ${type === "unit" ? styles.avatarUnit : ""}`}
-          style={(() => {
-            const s: React.CSSProperties & { "--size"?: string } = {
-              backgroundImage: photoUrl ? `url(${photoUrl})` : undefined,
-            };
-            s["--size"] = `${size}px`;
-            return s;
-          })()}
+    <Badge variant="secondary" className="flex items-center gap-2 pr-1 max-w-60">
+      <Link href={href} className="flex items-center gap-2 flex-1 min-w-0 no-underline hover:no-underline">
+        <Avatar 
+          className={cn(
+            "flex-shrink-0",
+            type === "unit" ? "rounded-md" : "rounded-full"
+          )} 
+          style={{ width: size, height: size }}
         >
-          {!photoUrl && initials}
-        </span>
-        <span className={styles.name}>{name}</span>
+          <AvatarImage src={photoUrl || undefined} alt={name} />
+          <AvatarFallback className={cn(
+            "text-xs font-semibold",
+            type === "unit" ? "rounded-md" : "rounded-full"
+          )}>
+            {initials}
+          </AvatarFallback>
+        </Avatar>
+        <span className="text-xs truncate">{name}</span>
       </Link>
       {onRemove && (
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-4 w-4 p-0 hover:bg-transparent"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             onRemove();
           }}
-          className={styles.removeButton}
           aria-label={`Remove ${name}`}
         >
           ×
-        </button>
+        </Button>
       )}
-    </span>
+    </Badge>
   );
 };

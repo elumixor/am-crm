@@ -1,7 +1,9 @@
 "use client";
+import { Avatar, AvatarFallback, AvatarImage } from "components/shad/avatar";
+import { Badge } from "components/shad/badge";
+import { Button } from "components/shad/button";
 import Link from "next/link";
 import React from "react";
-import styles from "./EntityChip.module.scss";
 
 export interface User {
   id: string;
@@ -61,45 +63,40 @@ export const UserChip: React.FC<UserChipProps> = ({ user, onRemove, size = 28, s
 
   const content = (
     <>
-      <span
-        className={styles.avatar}
-        style={(() => {
-          const s: React.CSSProperties & { "--size"?: string } = {
-            backgroundImage: photoUrl ? `url(${photoUrl})` : undefined,
-          };
-          s["--size"] = `${size}px`;
-          return s;
-        })()}
-      >
-        {!photoUrl && initials}
-      </span>
-      <span className={styles.name}>{displayName}</span>
+      <Avatar className="flex-shrink-0" style={{ width: size, height: size }}>
+        <AvatarImage src={photoUrl || undefined} alt={displayName} />
+        <AvatarFallback className="text-xs font-semibold">
+          {initials}
+        </AvatarFallback>
+      </Avatar>
+      <span className="text-xs truncate">{displayName}</span>
     </>
   );
 
   return (
-    <span className={styles.chip}>
+    <Badge variant="secondary" className="flex items-center gap-2 pr-1 max-w-60">
       {showLink ? (
-        <Link href={`/users/${user.id}`} className={styles.link}>
+        <Link href={`/users/${user.id}`} className="flex items-center gap-2 flex-1 min-w-0 no-underline hover:no-underline">
           {content}
         </Link>
       ) : (
-        <span className={styles.link}>{content}</span>
+        <span className="flex items-center gap-2 flex-1 min-w-0">{content}</span>
       )}
       {onRemove && (
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-4 w-4 p-0 hover:bg-transparent"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             onRemove();
           }}
-          className={styles.removeButton}
           aria-label={`Remove ${displayName}`}
         >
           ×
-        </button>
+        </Button>
       )}
-    </span>
+    </Badge>
   );
 };
