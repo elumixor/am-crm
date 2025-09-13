@@ -1,7 +1,9 @@
 "use client";
+import { Input } from "components/shad/input";
+import { Label } from "components/shad/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "components/shad/select";
 import { useState } from "react";
 import { EntityChip } from "./EntityChip";
-import ui from "styles/ui.module.scss";
 
 export interface ChipsSelectorItem {
   id: string;
@@ -30,43 +32,46 @@ export function ChipsSelector(props: ChipsSelectorProps) {
     : pool.slice(0, 50);
 
   return (
-    <div className={ui.gridGap4}>
-      {label && <span className={`${ui.labelSm} ${ui.labelStatic}`}>{label}</span>}
-      <div className={ui.flexRowGap8}>
-        <input
-          placeholder={placeholder || "Search..."}
+    <div className="space-y-4">
+      {label && <Label className="text-sm font-medium">{label}</Label>}
+      <div className="flex gap-2">
+        <Input
+          placeholder={placeholder ?? "Search..."}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          style={{ flex: 1 }}
+          className="flex-1"
         />
-        <select
+        <Select
           value=""
-          onChange={(e) => {
-            const id = e.target.value;
+          onValueChange={(id) => {
             if (!id) return;
             onChange([...selectedIds, id]);
             setQuery("");
           }}
         >
-          <option value="">Add...</option>
-          {filtered.map((i: ChipsSelectorItem) => (
-            <option key={i.id} value={i.id}>
-              {i.label}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger className="w-32">
+            <SelectValue placeholder="Add..." />
+          </SelectTrigger>
+          <SelectContent>
+            {filtered.map((i: ChipsSelectorItem) => (
+              <SelectItem key={i.id} value={i.id}>
+                {i.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       {selectedIds.length > 0 && (
-        <div className={ui.flexWrapGap8}>
+        <div className="flex flex-wrap gap-2">
           {selectedIds.map((id) => {
             const item = items.find((x) => x.id === id);
             return (
               <EntityChip
                 key={id}
                 id={id}
-                type={item?.entityType || "user"}
-                name={item?.label || id}
-                href={item?.href || "#"}
+                type={item?.entityType ?? "user"}
+                name={item?.label ?? id}
+                href={item?.href ?? "#"}
                 photoUrl={item?.photoUrl}
                 onRemove={() => onChange(selectedIds.filter((x) => x !== id))}
                 size={24}
