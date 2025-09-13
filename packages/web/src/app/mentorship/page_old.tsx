@@ -14,7 +14,8 @@ interface User {
   worldlyName?: string | null;
   displayName?: string | null;
   mentorId?: string | null;
-  mentees?: { id: string; email: string; displayName?: string; spiritualName?: string; worldlyName?: string }[];
+  mentees?: { id: string }[];
+  traits?: { id: string; trait: string }[];
 }
 
 export default function MentorshipPage() {
@@ -23,31 +24,26 @@ export default function MentorshipPage() {
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Since we don't have traits, let's use a simple rule: 
-  // A user can be a mentor if they have mentees OR if they want to become one
-  const [wantsToBeMentor, setWantsToBeMentor] = useState(false);
-  const isMentor = (currentUser?.mentees && currentUser.mentees.length > 0) || wantsToBeMentor;
+  // Check if user is a mentor
+  const isMentor = currentUser?.traits?.some((trait) => trait.trait === "mentor") ?? false;
   const hasMentor = currentUser?.mentorId != null;
 
   // Load current user and all users
   const loadData = useCallback(async () => {
     if (!userId) return;
-    
+
     setLoading(true);
     try {
       const [userResponse, usersResponse] = await Promise.all([
         client.users[":id"].$get({ param: { id: userId } }),
-        client.users.$get()
+        client.users.$get(),
       ]);
-      
+
       const user = await validJsonInternal(userResponse);
       const { data: users } = await validJsonInternal(usersResponse);
-      
+
       setCurrentUser(user);
       setAllUsers(users);
-      
-      // Check if user already has mentees (they're already a mentor)
-      setWantsToBeMentor((user?.mentees && user.mentees.length > 0) || false);
     } catch (error) {
       console.error("Error loading data:", error);
     } finally {
@@ -59,38 +55,45 @@ export default function MentorshipPage() {
     void loadData();
   }, [loadData]);
 
+  // Add mentor trait
+  const [becomeMentor, becomeMentorError, becomeMentorLoading] = useAsyncWithError(async () => {
+    if (!userId) return;
+
+    const response = await client.users[":id"].traits.$post({
+      param: { id: userId },
+      json: { trait: "mentor" },
+    });
+
+    await validJsonInternal(response);
+    await loadData();
+  });
+
+  // Remove mentor trait
+  const [stopMentoring, stopMentoringError, stopMentoringLoading] = useAsyncWithError(async () => {
+    if (!userId) return;
+
+    const response = await client.users[":id"].traits[":trait"].$delete({
+      param: { id: userId, trait: "mentor" },
+    });
+
+    await validJsonInternal(response);
+    await loadData();
+  });
+
   // Request a mentor (placeholder - would need actual implementation)
   const [requestMentor, requestMentorError, requestMentorLoading] = useAsyncWithError(async () => {
     // For now, just show an alert - in a real app this would create a request
-    alert("Mentor request functionality would be implemented here. This might involve creating a request record or notifying potential mentors.");
-  });
-
-  // Become a mentor (simplified - just enables mentor UI)
-  const [becomeMentor, becomeMentorError, becomeMentorLoading] = useAsyncWithError(async () => {
-    setWantsToBeMentor(true);
-  });
-
-  // Stop mentoring (remove all mentees)
-  const [stopMentoring, stopMentoringError, stopMentoringLoading] = useAsyncWithError(async () => {
-    if (!userId) return;
-    
-    const response = await client.mentees.$put({ 
-      json: { menteeIds: [] }
-    });
-    
-    await validJsonInternal(response);
-    setWantsToBeMentor(false);
-    await loadData();
+    alert("Mentor request functionality would be implemented here");
   });
 
   // Update mentees
   const [updateMentees, updateMenteesError, _updateMenteesLoading] = useAsyncWithError(async (menteeIds: string[]) => {
     if (!userId) return;
-    
-    const response = await client.mentees.$put({ 
-      json: { menteeIds }
+
+    const response = await client.mentees.$put({
+      json: { menteeIds },
     });
-    
+
     await validJsonInternal(response);
     await loadData();
   });
@@ -121,42 +124,31 @@ export default function MentorshipPage() {
     <main>
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-6">Mentorship</h1>
-        
+
         <div className="grid gap-6">
           {/* Action Buttons Section */}
           <section className="border rounded-lg p-4">
             <h2 className="text-lg font-semibold mb-4">Actions</h2>
             <div className="flex gap-4 flex-wrap">
               {!isMentor && !hasMentor && (
-                <Button 
-                  onClick={requestMentor}
-                  disabled={requestMentorLoading}
-                  variant="outline"
-                >
+                <Button onClick={requestMentor} disabled={requestMentorLoading} variant="outline">
                   {requestMentorLoading ? "Requesting..." : "Request a Mentor"}
                 </Button>
               )}
-              
+
               {!isMentor && (
-                <Button 
-                  onClick={becomeMentor}
-                  disabled={becomeMentorLoading}
-                >
+                <Button onClick={becomeMentor} disabled={becomeMentorLoading}>
                   {becomeMentorLoading ? "Processing..." : "Become a Mentor"}
                 </Button>
               )}
-              
+
               {isMentor && (
-                <Button 
-                  onClick={stopMentoring}
-                  disabled={stopMentoringLoading}
-                  variant="destructive"
-                >
+                <Button onClick={stopMentoring} disabled={stopMentoringLoading} variant="destructive">
                   {stopMentoringLoading ? "Processing..." : "Stop Mentoring"}
                 </Button>
               )}
             </div>
-            
+
             {/* Error messages */}
             {becomeMentorError && <p className="text-red-600 mt-2">Error: {becomeMentorError}</p>}
             {stopMentoringError && <p className="text-red-600 mt-2">Error: {stopMentoringError}</p>}
@@ -168,17 +160,23 @@ export default function MentorshipPage() {
           {isMentor && (
             <section className="border rounded-lg p-4">
               <h2 className="text-lg font-semibold mb-4">My Mentees</h2>
-              
+
               {/* Current mentees */}
               <div className="mb-4">
                 <h3 className="font-medium mb-2">Current Mentees:</h3>
                 {currentUser.mentees && currentUser.mentees.length > 0 ? (
                   <div className="space-y-2">
-                    {currentUser.mentees.map(mentee => (
-                      <div key={mentee.id} className="p-2 border rounded">
-                        {mentee.displayName || mentee.spiritualName || mentee.worldlyName || mentee.email}
-                      </div>
-                    ))}
+                    {currentUser.mentees.map((mentee) => {
+                      const menteeUser = allUsers.find((u) => u.id === mentee.id);
+                      return (
+                        <div key={mentee.id} className="p-2 border rounded">
+                          {menteeUser?.displayName ||
+                            menteeUser?.spiritualName ||
+                            menteeUser?.worldlyName ||
+                            menteeUser?.email}
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
                   <p className="text-gray-600">No mentees assigned yet.</p>
@@ -189,10 +187,10 @@ export default function MentorshipPage() {
               <div>
                 <h3 className="font-medium mb-2">Manage Mentees:</h3>
                 <ChipsSelector
-                  selectedIds={currentUser.mentees?.map(m => m.id) || []}
+                  selectedIds={currentUser.mentees?.map((m) => m.id) || []}
                   items={allUsers
-                    .filter(user => user.id !== userId) // Don't include self
-                    .map(user => ({
+                    .filter((user) => user.id !== userId) // Don't include self
+                    .map((user) => ({
                       id: user.id,
                       label: user.displayName || user.spiritualName || user.worldlyName || user.email,
                       entityType: "user" as const,
@@ -201,14 +199,6 @@ export default function MentorshipPage() {
                   placeholder="Search for users to add as mentees..."
                 />
               </div>
-            </section>
-          )}
-
-          {/* Mentor Info Section */}
-          {hasMentor && (
-            <section className="border rounded-lg p-4">
-              <h2 className="text-lg font-semibold mb-4">My Mentor</h2>
-              <p>You have a mentor assigned (ID: {currentUser.mentorId})</p>
             </section>
           )}
 

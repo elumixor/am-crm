@@ -27,6 +27,7 @@ export const UserSchema = z.object({
   updatedAt: z.date(),
   mentees: z.array(z.object({ id: z.string() })).optional(),
   initiates: z.array(z.object({ id: z.string() })).optional(),
+  traits: z.array(z.object({ id: z.string(), trait: z.string() })).optional(),
   // Computed fields for frontend
   fullName: z.string().optional(),
   photoUrl: z.string().optional(),

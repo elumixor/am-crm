@@ -1,5 +1,4 @@
 "use client";
-import type { Unit } from "@am-crm/db";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { client, validJsonInternal } from "services/http";
@@ -8,8 +7,14 @@ import { z } from "zod";
 
 const createUnitSchema = z.object({ name: z.string().min(1), description: z.string().optional() });
 
+interface Unit {
+  id: string;
+  name: string;
+  description?: string | null;
+}
+
 export default function UnitsPage() {
-  const [units, setUnits] = useState<Unit[]>([]);
+  const [units, _setUnits] = useState<Unit[]>([]);
   const [newName, setNewName] = useState("");
   const [loading, setLoading] = useState(true);
 

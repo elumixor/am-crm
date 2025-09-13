@@ -31,7 +31,7 @@
       "@am-crm/db": ["packages/db"],
       "@am-crm/api": ["packages/api/src"],
       "@am-crm/web": ["packages/web/src"],
-      "@am-crm/telegram-bot": ["packages/telegram-bot/src"],
+      "@am-crm/telegram-bot": ["packages/telegram-bot/src"]
     }
   },
   "include": ["packages/**/*", "index.ts"],
