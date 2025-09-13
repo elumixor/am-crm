@@ -4,6 +4,7 @@ import { showRoutes } from "hono/dev";
 import { logger } from "hono/logger";
 import { env } from "services/env";
 import { auth } from "./routes/auth";
+import { mentees } from "./routes/mentees";
 import { signedUrl } from "./routes/signed-url";
 import { units } from "./routes/units";
 import { users } from "./routes/users";
@@ -45,6 +46,8 @@ const app = new Hono()
   .route("/auth", auth)
   // Users routes
   .route("/users", users)
+  // Mentees routes
+  .route("/mentees", mentees)
   // Units routes
   .route("/units", units);
 

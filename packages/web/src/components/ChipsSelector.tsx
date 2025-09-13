@@ -64,7 +64,8 @@ export function ChipsSelector(props: ChipsSelectorProps) {
       {selectedIds.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {selectedIds.map((id) => {
-            const item = items.find((x) => x.id === id);
+            const item = items.find((i) => i.id === id);
+            if (!item) return null;
             return (
               <EntityChip
                 key={id}

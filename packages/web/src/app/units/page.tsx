@@ -19,11 +19,15 @@ export default function UnitsPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const response = await client.units.$get();
-    // TODO: Uncomment when API is ready
-    // const { data } = await validJsonInternal(response);
-    // setUnits(data);
-    setLoading(false);
+    try {
+      const response = await client.units.$get();
+      const { data } = await validJsonInternal(response);
+      setUnits(data);
+    } catch (error) {
+      console.error("Failed to load units:", error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   // Load immediately
@@ -101,7 +105,7 @@ export default function UnitsPage() {
                   </div>
 
                   <div className="text-sm text-muted-foreground">
-                    Users: <span className="font-medium">Not implemented yet</span>
+                    Users: <span className="font-medium">{(unit as any)?.users?.length ?? "Not available"}</span>
                   </div>
 
                   <div className="flex justify-end">
