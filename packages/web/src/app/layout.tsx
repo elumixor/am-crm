@@ -1,5 +1,6 @@
 import NavBar from "components/NavBar";
 import { AuthProvider } from "contexts/AuthContext";
+import { NextAuthProvider } from "components/NextAuthProvider";
 // import { ErrorProvider } from "contexts/ErrorContext";
 // import { ErrorNotifications } from "components/ErrorNotifications";
 import type React from "react";
@@ -10,11 +11,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         {/* <ErrorProvider> */}
-        <AuthProvider>
-          <NavBar />
-          {children}
-          {/* <ErrorNotifications /> */}
-        </AuthProvider>
+        <NextAuthProvider>
+          <AuthProvider>
+            <NavBar />
+            {children}
+            {/* <ErrorNotifications /> */}
+          </AuthProvider>
+        </NextAuthProvider>
         {/* </ErrorProvider> */}
       </body>
     </html>
