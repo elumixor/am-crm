@@ -53,6 +53,9 @@ model User {
 
   // Lessons relation
   lessons UserLesson[]
+  
+  // User traits
+  traits UserTrait[]
 }
 
 model UserLesson {
@@ -72,4 +75,14 @@ model Unit {
   unofficialRegisteredAt DateTime?
   officialRegisteredAt   DateTime?
   users                  User[]
+}
+
+model UserTrait {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trait  String // e.g. 'mentor', 'acarya', 'unit_secretary'
+
+  @@unique([userId, trait])
+  @@index([trait])
 }

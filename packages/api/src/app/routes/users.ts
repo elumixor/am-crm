@@ -13,6 +13,7 @@ export const userSelect = {
   include: Prisma.validator<Prisma.UserInclude>()({
     mentees: { select: { id: true } },
     initiates: { select: { id: true } },
+    traits: { select: { id: true, trait: true } },
   }),
 };
 
@@ -140,6 +141,37 @@ export const users = new Hono()
 
     await prisma.userLesson.delete({
       where: { userId_lesson: { userId: id, lesson: lessonNum } },
+    });
+
+    return c.body(null, 204);
+  })
+  // Add trait to user
+  .post("/:id/traits", zId, zValidator("json", z.object({ trait: z.string() })), authMiddleware, async (c) => {
+    const { userId: editorId } = requireAuth(c);
+    const { id } = c.req.valid("param");
+    const { trait } = c.req.valid("json");
+
+    // Check permissions: only admin or self-edit
+    if (editorId !== id) throw new ApiError(`Forbidden to edit user ${id} by ${editorId}`, 403);
+
+    const userTrait = await prisma.userTrait.upsert({
+      where: { userId_trait: { userId: id, trait } },
+      update: {},
+      create: { userId: id, trait },
+    });
+
+    return c.json(userTrait, 201);
+  })
+  // Remove trait from user
+  .delete("/:id/traits/:trait", zValidator("param", z.object({ id: z.string(), trait: z.string() })), authMiddleware, async (c) => {
+    const { userId: editorId } = requireAuth(c);
+    const { id, trait } = c.req.valid("param");
+
+    // Check permissions: only admin or self-edit
+    if (editorId !== id) throw new ApiError(`Forbidden to edit user ${id} by ${editorId}`, 403);
+
+    await prisma.userTrait.delete({
+      where: { userId_trait: { userId: id, trait } },
     });
 
     return c.body(null, 204);
