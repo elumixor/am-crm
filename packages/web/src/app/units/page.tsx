@@ -1,23 +1,17 @@
 "use client";
+import type { Unit } from "@am-crm/db";
 import { Button } from "components/shad/button";
 import { Card, CardContent, CardHeader, CardTitle } from "components/shad/card";
 import { Input } from "components/shad/input";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { client } from "services/http";
+import { client, validJsonInternal } from "services/http";
 import { z } from "zod";
-
-// Temporary type until @am-crm/db is available
-interface Unit {
-  id: string;
-  name: string;
-  description?: string | null;
-}
 
 const createUnitSchema = z.object({ name: z.string().min(1), description: z.string().optional() });
 
 export default function UnitsPage() {
-  const [units] = useState<Unit[]>([]);
+  const [units, setUnits] = useState<Unit[]>([]);
   const [newName, setNewName] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -25,8 +19,7 @@ export default function UnitsPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    await client.units.$get();
-    // TODO: Uncomment when backend is ready
+    const response = await client.units.$get();
     // const { data } = await validJsonInternal(response);
     // setUnits(data);
     setLoading(false);
