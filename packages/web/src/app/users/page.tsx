@@ -1,11 +1,13 @@
 "use client";
 
 import type { User } from "@am-crm/shared";
-import { EntityChip } from "components/EntityChip";
+import { Avatar, AvatarFallback, AvatarImage } from "components/shad/avatar";
+import { Badge } from "components/shad/badge";
+import { Button } from "components/shad/button";
+import { Card, CardContent, CardHeader, CardTitle } from "components/shad/card";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { client, validJsonInternal } from "services/http";
-import ui from "./styles.module.scss";
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -39,99 +41,79 @@ export default function UsersPage() {
   }, [fetchUsers, fetchUnits]);
 
   return (
-    <div className={`${ui.container} ${ui.main} ${ui.max1200} ${ui.mxAuto}`}>
-      <div className={`${ui.flexRow} ${ui.justifyBetween} ${ui.alignCenter} ${ui.mb24}`}>
-        <h1 className={ui.mt0}>User Management</h1>
+    <main className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold">User Management</h1>
       </div>
 
-      {/* Users Table */}
+      {/* Users Grid */}
       {users.length === 0 ? (
-        <div className={ui.textMuted} style={{ textAlign: "center", padding: 40 }}>
-          No users found.
-        </div>
+        <Card>
+          <CardContent className="flex items-center justify-center py-16">
+            <p className="text-muted-foreground">No users found.</p>
+          </CardContent>
+        </Card>
       ) : (
-        <div className={ui.card}>
-          <table className={ui.table}>
-            <thead>
-              <tr className={ui.tableHead}>
-                <th className={ui.th}>User</th>
-                <th className={ui.th}>Unit</th>
-                <th className={ui.th}>Mentor</th>
-                <th className={ui.th}>Mentees</th>
-                <th className={`${ui.th} ${ui.textCenter}`}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => {
-                const unit = units.find((u) => u.id === user.unitId);
-                const unitLabel = unit ? unit.name : user.unitId || "-";
-                const display = user.displayName || user.spiritualName || user.fullName || "-";
-                return (
-                  <tr key={user.id}>
-                    <td className={ui.td}>
-                      <div className={`${ui.flexRowGap8} ${ui.alignCenter}`}>
-                        <Link href={`/users/${user.id}`} style={{ textDecoration: "none", color: "inherit" }}>
-                          <div
-                            className={""}
-                            style={{
-                              backgroundImage: user.photoUrl ? `url(${user.photoUrl})` : "url(/images/user.png)",
-                              width: 36,
-                              height: 36,
-                              borderRadius: "50%",
-                              backgroundSize: "cover",
-                              backgroundPosition: "center",
-                              border: "1px solid #ccc",
-                              flexShrink: 0,
-                            }}
-                          />
-                        </Link>
-                        <div style={{ display: "grid" }}>
-                          <Link href={`/users/${user.id}`} className={ui.link}>
-                            {display}
-                          </Link>
-                          <span className={ui.textMuted} style={{ fontSize: 12 }}>
-                            {user.email}
-                          </span>
-                        </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {users.map((user) => {
+            const unit = units.find((u) => u.id === user.unitId);
+            const display = user.displayName || user.spiritualName || user.worldlyName || user.email;
+            const mentor = user.mentorId ? users.find((u) => u.id === user.mentorId) : null;
+
+            return (
+              <Card key={user.id} className="group hover:shadow-md transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <Avatar className="w-12 h-12">
+                      <AvatarImage src={user.photoUrl || undefined} alt={display} />
+                      <AvatarFallback>{display.charAt(0).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+
+                    <div className="flex-1 min-w-0">
+                      <Link
+                        href={`/users/${user.id}`}
+                        className="text-lg font-semibold hover:text-primary transition-colors"
+                      >
+                        {display}
+                      </Link>
+                      <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        {unit && (
+                          <Badge variant="secondary" className="text-xs">
+                            Unit: {unit.name}
+                          </Badge>
+                        )}
+
+                        {mentor && (
+                          <Badge variant="outline" className="text-xs">
+                            Mentor: {mentor.displayName || mentor.spiritualName || mentor.email}
+                          </Badge>
+                        )}
+
+                        {user.menteeIds && user.menteeIds.length > 0 && (
+                          <Badge variant="outline" className="text-xs">
+                            {user.menteeIds.length} Mentee{user.menteeIds.length !== 1 ? "s" : ""}
+                          </Badge>
+                        )}
                       </div>
-                    </td>
-                    <td className={ui.td}>
-                      {user.unitId && unit ? (
-                        <EntityChip id={unit.id} type="unit" name={unitLabel} href={`/units/${unit.id}`} />
-                      ) : (
-                        <span style={{ color: "#999" }}>-</span>
-                      )}
-                    </td>
-                    <td className={ui.td}>
-                      {(() => {
-                        if (!user.mentorId) return "-";
-                        const mentor = users.find((u) => u.id === user.mentorId);
-                        return mentor ? (
-                          <EntityChip
-                            id={mentor.id}
-                            type="user"
-                            name={mentor.displayName || mentor.spiritualName || mentor.email}
-                            href={`/users/${mentor.id}`}
-                            photoUrl={mentor.photoUrl || undefined}
-                          />
-                        ) : (
-                          user.mentorId
-                        );
-                      })()}
-                    </td>
-                    <td className={ui.td}>{user.menteeIds?.length ?? 0}</td>
-                    <td className={`${ui.td} ${ui.textCenter}`}>
-                      <button type="button" onClick={() => handleDelete(user)} className={`${ui.btn} ${ui.btnDanger}`}>
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+
+                      <div className="flex gap-2 mt-4">
+                        <Button size="sm" variant="outline" asChild>
+                          <Link href={`/users/${user.id}`}>View</Link>
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => handleDelete(user)}>
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
-    </div>
+    </main>
   );
 }

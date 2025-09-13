@@ -1,10 +1,18 @@
 "use client";
-import type { Unit } from "@am-crm/db";
+import { Button } from "components/shad/button";
+import { Card, CardContent, CardHeader, CardTitle } from "components/shad/card";
+import { Input } from "components/shad/input";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { client, validJsonInternal } from "services/http";
-import ui from "./styles.module.scss";
 import { z } from "zod";
+
+// Temporary type until @am-crm/db is available
+interface Unit {
+  id: string;
+  name: string;
+  description?: string | null;
+}
 
 const createUnitSchema = z.object({ name: z.string().min(1), description: z.string().optional() });
 
@@ -46,53 +54,71 @@ export default function UnitsPage() {
   }
 
   return (
-    <main className={`${ui.container} ${ui.main} ${ui.max900}`}>
-      <h1>Units</h1>
-      <div className={`${ui.flexRowGap8} ${ui.mb24}`}>
-        <input
-          placeholder="New unit name"
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-          className={ui.flex1}
-        />
-        <button type="button" onClick={createUnit} disabled={!newName.trim()}>
-          Add
-        </button>
+    <main className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-6">Units</h1>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Create New Unit</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-4">
+              <Input
+                placeholder="New unit name"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                className="flex-1"
+              />
+              <Button onClick={createUnit} disabled={!newName.trim()}>
+                Add Unit
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {loading ? (
-        <p>Loading...</p>
+        <Card>
+          <CardContent className="flex items-center justify-center py-16">
+            <p className="text-muted-foreground">Loading...</p>
+          </CardContent>
+        </Card>
       ) : units.length === 0 ? (
-        <p>No units yet.</p>
+        <Card>
+          <CardContent className="flex items-center justify-center py-16">
+            <p className="text-muted-foreground">No units yet.</p>
+          </CardContent>
+        </Card>
       ) : (
-        <table className={ui.table}>
-          <thead>
-            <tr className={ui.tableHead}>
-              <th className={ui.th}>Name</th>
-              <th className={ui.th}>Description</th>
-              <th className={ui.th}>Users</th>
-              <th className={ui.th}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {units.map((u) => (
-              <tr key={u.id}>
-                <td className={ui.td}>
-                  <a href={`/units/${u.id}`} className={ui.link}>
-                    {u.name}
-                  </a>
-                </td>
-                <td className={ui.td}>{u.description || "-"}</td>
-                <td className={ui.td}>{"fix me"}</td>
-                <td className={ui.td}>
-                  <button type="button" onClick={() => remove(u.id)} className={ui.textDanger}>
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {units.map((unit) => (
+            <Card key={unit.id} className="group hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">
+                      <a href={`/units/${unit.id}`} className="text-primary hover:underline">
+                        {unit.name}
+                      </a>
+                    </h3>
+                    <p className="text-sm text-muted-foreground">{unit.description || "No description"}</p>
+                  </div>
+
+                  <div className="text-sm text-muted-foreground">
+                    Users: <span className="font-medium">{"fix me"}</span>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <Button variant="destructive" size="sm" onClick={() => remove(unit.id)}>
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       )}
     </main>
   );

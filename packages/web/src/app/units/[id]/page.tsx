@@ -1,8 +1,12 @@
 "use client";
+import { Button } from "components/shad/button";
+import { Card, CardContent, CardHeader, CardTitle } from "components/shad/card";
+import { Input } from "components/shad/input";
+import { Textarea } from "components/shad/textarea";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { z } from "zod";
-import ui from "./styles.module.scss";
 
 interface UnitDetail {
   id: string;
@@ -48,43 +52,60 @@ export default function UnitProfilePage() {
     router.refresh();
   }
 
-  if (!unit) return <main className={ui.main}>Loading...</main>;
+  if (!unit) {
+    return (
+      <main className="container mx-auto px-4 py-8 flex justify-center items-center h-64">
+        <p className="text-lg text-muted-foreground">Loading...</p>
+      </main>
+    );
+  }
 
   return (
-    <main className={`${ui.container} ${ui.main} ${ui.max800}`}>
-      <a href="/units" className={ui.link}>
-        ← Back to units
-      </a>
-      <h1 className={ui.mt12}>Unit: {unit.name}</h1>
-      <div className={ui.gridGap16}>
-        <label className={ui.gridGap4}>
-          <span className={ui.labelSm}>Name</span>
-          <input value={unit.name} onChange={(e) => update("name", e.target.value)} />
-        </label>
-        <label className={ui.gridGap4}>
-          <span className={ui.labelSm}>Description</span>
-          <textarea
-            value={unit.description || ""}
-            onChange={(e) => update("description", e.target.value ?? null)}
-            rows={3}
-          />
-        </label>
-        {/* <ChipsSelector
-          label="Users"
-          selectedIds={unit.userIds}
-          items={userItems.map((u) => ({ ...u, href: `/users/${u.id}` }))}
-          onChange={(ids) => update("userIds", ids)}
-          placeholder="Search users..."
-        /> */}
-        <div className={ui.flexRowGap12}>
-          <button type="button" onClick={save} disabled={saving}>
-            {saving ? "Saving..." : "Save"}
-          </button>
-          <button type="button" onClick={() => router.push("/units")}>
-            Cancel
-          </button>
-        </div>
+    <main className="container mx-auto px-4 py-8 max-w-2xl">
+      <div className="mb-6">
+        <Button variant="ghost" asChild>
+          <Link href="/units">← Back to units</Link>
+        </Button>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Edit Unit: {unit.name}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div>
+            <span className="text-sm font-medium text-muted-foreground mb-2 block">Name</span>
+            <Input value={unit.name} onChange={(e) => update("name", e.target.value)} placeholder="Unit name" />
+          </div>
+
+          <div>
+            <span className="text-sm font-medium text-muted-foreground mb-2 block">Description</span>
+            <Textarea
+              value={unit.description || ""}
+              onChange={(e) => update("description", e.target.value || null)}
+              rows={3}
+              placeholder="Unit description"
+            />
+          </div>
+
+          {/* TODO: Add ChipsSelector component for users when available */}
+          <div>
+            <span className="text-sm font-medium text-muted-foreground mb-2 block">Users</span>
+            <p className="text-sm text-muted-foreground">
+              {unit.users.length} user{unit.users.length !== 1 ? "s" : ""} assigned
+            </p>
+          </div>
+
+          <div className="flex gap-4 pt-4">
+            <Button onClick={save} disabled={saving}>
+              {saving ? "Saving..." : "Save Changes"}
+            </Button>
+            <Button variant="outline" onClick={() => router.push("/units")}>
+              Cancel
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </main>
   );
 }
