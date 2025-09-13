@@ -47,12 +47,13 @@ export default function UserProfileView() {
   const { userId } = useAuth();
   const router = useRouter();
 
-  const [user, setUser] = useState<UserDto | null>(null);
-  const [allUsers, setAllUsers] = useState<UserDto[]>([]);
+  const [user] = useState<UserDto | null>(null);
+  const [allUsers] = useState<UserDto[]>([]);
 
   useEffect(() => {
     void (async () => {
-      const user = await validJson(client.users[":id"].$get({ param: { id } }));
+      await validJson(client.users[":id"].$get({ param: { id } }));
+      // TODO: Uncomment when backend is ready
       // if (user) setUser(user);
       // const allRes = await validJson(client.users.$get());
       // setAllUsers(allRes.data);

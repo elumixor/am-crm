@@ -1,27 +1,38 @@
 "use client";
 
 import { Icon } from "components/Icon";
+import { Card, CardDescription, CardHeader, CardTitle } from "components/shad/card";
 import Link from "next/link";
 import type { IconName } from "styles/types";
 
 export default function DashboardPage() {
   return (
-    <main style={{ padding: "24px" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "24px" }}>
-        <Card title="Users" description="Manage and view all users in the system." icon="people" href="/users" />
-        <Card
+    <main className="container mx-auto px-4 py-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <DashboardCard 
+          title="Users" 
+          description="Manage and view all users in the system." 
+          icon="people" 
+          href="/users" 
+        />
+        <DashboardCard
           title="Mentorship"
           description="View and manage mentorship relationships."
           icon="mentorship"
-          href="/mentees"
+          href="/mentorship"
         />
-        <Card title="Units" description="Organize and oversee different units." icon="unit" href="/units" />
+        <DashboardCard 
+          title="Units" 
+          description="Organize and oversee different units." 
+          icon="unit" 
+          href="/units" 
+        />
       </div>
     </main>
   );
 }
 
-function Card({
+function DashboardCard({
   title,
   description,
   icon,
@@ -32,37 +43,21 @@ function Card({
   icon: IconName;
   href: string;
 }) {
-  const handleMouseEnter = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.currentTarget.style.backgroundColor = "#f8fafc";
-    e.currentTarget.style.borderColor = "#cbd5e1";
-  };
-
-  const handleMouseLeave = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.currentTarget.style.backgroundColor = "#fff";
-    e.currentTarget.style.borderColor = "#e2e8f0";
-  };
-
   return (
-    <Link
-      href={href}
-      style={{
-        color: "inherit",
-        display: "block",
-        border: "1px solid #e2e8f0",
-        background: "#fff",
-        transition: "all 0.2s ease",
-      }}
-      className="unstyled p-lg rounded"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      <div className="flex gap-md">
-        <Icon icon={icon} size="md" />
-        <div className="flex-column">
-          <h2 style={{ margin: "0 0 8px 0", fontSize: "24px", color: "#1f2937" }}>{title}</h2>
-          <p style={{ margin: 0, color: "#6b7280", fontSize: "14px" }}>{description}</p>
-        </div>
-      </div>
+    <Link href={href}>
+      <Card className="transition-all duration-200 hover:bg-accent/50 hover:shadow-md cursor-pointer">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <Icon icon={icon} size="md" />
+            <div>
+              <CardTitle className="text-lg">{title}</CardTitle>
+              <CardDescription className="text-sm mt-1">
+                {description}
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
     </Link>
   );
 }

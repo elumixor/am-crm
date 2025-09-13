@@ -4,19 +4,21 @@ import type { User } from "@am-crm/shared";
 import { Avatar, AvatarFallback, AvatarImage } from "components/shad/avatar";
 import { Badge } from "components/shad/badge";
 import { Button } from "components/shad/button";
-import { Card, CardContent, CardHeader, CardTitle } from "components/shad/card";
+import { Card, CardContent } from "components/shad/card";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { client, validJsonInternal } from "services/http";
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users] = useState<User[]>([]);
   const [units, setUnits] = useState<{ id: string; name: string }[]>([]);
 
   // Fetch all users
   const fetchUsers = useCallback(async () => {
     const response = await client.users.$get();
-    const { data } = await validJsonInternal(response);
+    await validJsonInternal(response);
+    // TODO: Uncomment when backend is ready
+    // const { data } = await validJsonInternal(response);
     // setUsers(data);
   }, []);
 
