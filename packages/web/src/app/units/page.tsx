@@ -17,10 +17,15 @@ export default function UnitsPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const response = await client.units.$get();
-    // const { data } = await validJsonInternal(response);
-    // setUnits(data);
-    setLoading(false);
+    try {
+      const response = await client.units.$get();
+      const { data } = await validJsonInternal(response);
+      setUnits(data);
+    } catch (error) {
+      console.error("Failed to load units:", error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   // Load immediately
@@ -83,7 +88,7 @@ export default function UnitsPage() {
                   </a>
                 </td>
                 <td className={ui.td}>{u.description || "-"}</td>
-                <td className={ui.td}>{"fix me"}</td>
+                <td className={ui.td}>{u.users.length}</td>
                 <td className={ui.td}>
                   <button type="button" onClick={() => remove(u.id)} className={ui.textDanger}>
                     Delete

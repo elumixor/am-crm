@@ -6,7 +6,21 @@ import { zId, zPaginator } from "utils/validators";
 import { z } from "zod";
 
 const unitSelect = {
-  include: { users: { select: { id: true } } },
+  include: { 
+    users: { 
+      select: { 
+        id: true, 
+        email: true,
+        spiritualName: true,
+        worldlyName: true,
+        preferredName: true,
+        preferredNameType: true,
+        displayName: true,
+        telegram: true,
+        whatsapp: true
+      } 
+    } 
+  },
 } as const;
 
 export const units = new Hono()
