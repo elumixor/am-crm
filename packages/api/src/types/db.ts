@@ -1,4 +1,43 @@
 // Minimal type definitions for @am-crm/db until Prisma client can be generated
+
+// Generic query argument types
+interface WhereClause {
+  [key: string]: unknown;
+}
+
+interface QueryArgs {
+  where?: WhereClause;
+  include?: Record<string, unknown>;
+  select?: Record<string, unknown>;
+  data?: Record<string, unknown>;
+  orderBy?: Record<string, unknown>;
+  take?: number;
+  skip?: number;
+}
+
+interface CreateArgs {
+  data: Record<string, unknown>;
+}
+
+interface UpdateArgs {
+  where: WhereClause;
+  data: Record<string, unknown>;
+}
+
+interface DeleteArgs {
+  where: WhereClause;
+}
+
+interface UpsertArgs {
+  where: WhereClause;
+  create: Record<string, unknown>;
+  update: Record<string, unknown>;
+}
+
+interface BatchResult {
+  count: number;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -27,24 +66,24 @@ export interface PrismaClient {
   $disconnect(): Promise<void>;
   $transaction<T>(fn: (tx: PrismaClient) => Promise<T>): Promise<T>;
   user: {
-    findUnique(args: any): Promise<User | null>;
-    findFirst(args: any): Promise<User | null>;
-    findMany(args: any): Promise<User[]>;
-    create(args: any): Promise<User>;
-    update(args: any): Promise<User>;
-    delete(args: any): Promise<User>;
-    upsert(args: any): Promise<User>;
-    deleteMany(args: any): Promise<any>;
+    findUnique(args: QueryArgs): Promise<User | null>;
+    findFirst(args: QueryArgs): Promise<User | null>;
+    findMany(args: QueryArgs): Promise<User[]>;
+    create(args: CreateArgs): Promise<User>;
+    update(args: UpdateArgs): Promise<User>;
+    delete(args: DeleteArgs): Promise<User>;
+    upsert(args: UpsertArgs): Promise<User>;
+    deleteMany(args: QueryArgs): Promise<BatchResult>;
   };
   magicLinkInvitation: {
-    findUnique(args: any): Promise<MagicLinkInvitation | null>;
-    findFirst(args: any): Promise<MagicLinkInvitation | null>;
-    findMany(args: any): Promise<MagicLinkInvitation[]>;
-    create(args: any): Promise<MagicLinkInvitation>;
-    update(args: any): Promise<MagicLinkInvitation>;
-    delete(args: any): Promise<MagicLinkInvitation>;
-    deleteMany(args: any): Promise<any>;
+    findUnique(args: QueryArgs): Promise<MagicLinkInvitation | null>;
+    findFirst(args: QueryArgs): Promise<MagicLinkInvitation | null>;
+    findMany(args: QueryArgs): Promise<MagicLinkInvitation[]>;
+    create(args: CreateArgs): Promise<MagicLinkInvitation>;
+    update(args: UpdateArgs): Promise<MagicLinkInvitation>;
+    delete(args: DeleteArgs): Promise<MagicLinkInvitation>;
+    deleteMany(args: QueryArgs): Promise<BatchResult>;
   };
 }
 
-export { PrismaClient as PrismaClient };
+export type { PrismaClient };

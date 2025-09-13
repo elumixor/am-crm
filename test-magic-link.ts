@@ -157,7 +157,7 @@ async function checkApiServer() {
       console.log("❌ API server responded with status:", response.status);
       return false;
     }
-  } catch (error) {
+  } catch (_error) {
     console.log("❌ Cannot connect to API server at", API_BASE);
     console.log("💡 Start the API server with: bun run dev");
     return false;
@@ -165,7 +165,7 @@ async function checkApiServer() {
 }
 
 // Main execution
-(async () => {
+void (async () => {
   const serverRunning = await checkApiServer();
   
   if (serverRunning) {
