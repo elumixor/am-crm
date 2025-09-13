@@ -14,9 +14,9 @@ export default function MagicLinkCreator({ onLinkCreated }: MagicLinkCreatorProp
 
   const createMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email.trim()) return;
-    
+
     setCreating(true);
     setError(null);
     setSuccess(null);
@@ -24,7 +24,7 @@ export default function MagicLinkCreator({ onLinkCreated }: MagicLinkCreatorProp
     try {
       // Get auth token from localStorage or context
       const authToken = localStorage.getItem("authToken");
-      
+
       if (!authToken) {
         setError("You must be logged in to create magic links");
         return;
@@ -34,22 +34,22 @@ export default function MagicLinkCreator({ onLinkCreated }: MagicLinkCreatorProp
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${authToken}`
+          Authorization: `Bearer ${authToken}`,
         },
-        body: JSON.stringify({ email: email.trim() })
+        body: JSON.stringify({ email: email.trim() }),
       });
 
       if (response.ok) {
         const result = await response.json();
         const magicLink = `${window.location.origin}/magic-link?token=${result.token}`;
-        
+
         setSuccess(`Magic link created! Valid until ${new Date(result.expiresAt).toLocaleString()}`);
         setEmail(""); // Clear form
-        
+
         // Copy to clipboard
         if (navigator.clipboard) {
           await navigator.clipboard.writeText(magicLink);
-          setSuccess(prev => `${prev} (Link copied to clipboard)`);
+          setSuccess((prev) => `${prev} (Link copied to clipboard)`);
         }
 
         onLinkCreated?.(magicLink, email.trim());
@@ -66,10 +66,8 @@ export default function MagicLinkCreator({ onLinkCreated }: MagicLinkCreatorProp
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">
-        Create Magic Link Invitation
-      </h3>
-      
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">Create Magic Link Invitation</h3>
+
       <form onSubmit={createMagicLink} className="space-y-4">
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -84,9 +82,7 @@ export default function MagicLinkCreator({ onLinkCreated }: MagicLinkCreatorProp
             placeholder="invitee@example.com"
             required
           />
-          <p className="mt-1 text-xs text-gray-500">
-            The person will receive a magic link to create their account
-          </p>
+          <p className="mt-1 text-xs text-gray-500">The person will receive a magic link to create their account</p>
         </div>
 
         {error && (

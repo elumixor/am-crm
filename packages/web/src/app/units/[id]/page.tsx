@@ -30,7 +30,7 @@ interface UnitWithUsers extends Unit {
 function getUserDisplayName(user: UnitUser): string {
   if (user.displayName) return user.displayName;
   if (user.preferredName) return user.preferredName;
-  
+
   switch (user.preferredNameType) {
     case "spiritual":
       return user.spiritualName || user.worldlyName || user.email;
@@ -93,7 +93,7 @@ export default function UnitProfilePage() {
 
   function addUserToUnit(user: UnitUser) {
     if (!unit) return;
-    const isAlreadyMember = unit.users.some(u => u.id === user.id);
+    const isAlreadyMember = unit.users.some((u) => u.id === user.id);
     if (!isAlreadyMember) {
       update("users", [...unit.users, user]);
     }
@@ -102,7 +102,10 @@ export default function UnitProfilePage() {
 
   function removeUserFromUnit(userId: string) {
     if (!unit) return;
-    update("users", unit.users.filter(u => u.id !== userId));
+    update(
+      "users",
+      unit.users.filter((u) => u.id !== userId),
+    );
   }
 
   async function save() {
@@ -130,7 +133,7 @@ export default function UnitProfilePage() {
   }
 
   // Filter available users to only show those not already in the unit
-  const usersToAdd = availableUsers.filter(user => !unit.users.some(u => u.id === user.id));
+  const usersToAdd = availableUsers.filter((user) => !unit.users.some((u) => u.id === user.id));
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-2xl">
@@ -147,9 +150,9 @@ export default function UnitProfilePage() {
         <CardContent className="space-y-6">
           <div>
             <span className="text-sm font-medium text-muted-foreground mb-2 block">Name</span>
-            <Input 
-              value={unit.name} 
-              onChange={(e) => update("name", e.target.value)} 
+            <Input
+              value={unit.name}
+              onChange={(e) => update("name", e.target.value)}
               placeholder="Unit name"
               disabled={!canManageUnit}
             />
@@ -171,16 +174,12 @@ export default function UnitProfilePage() {
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-muted-foreground">Members ({unit.users.length})</span>
               {canManageUnit && (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setShowAddUser(true)}
-                >
+                <Button variant="outline" size="sm" onClick={() => setShowAddUser(true)}>
                   Add Member
                 </Button>
               )}
             </div>
-            
+
             {unit.users.length === 0 ? (
               <p className="text-sm text-muted-foreground">No members yet.</p>
             ) : (
@@ -196,11 +195,7 @@ export default function UnitProfilePage() {
                         )}
                       </div>
                       {canManageUnit && (
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => removeUserFromUnit(user.id)}
-                        >
+                        <Button variant="destructive" size="sm" onClick={() => removeUserFromUnit(user.id)}>
                           Remove
                         </Button>
                       )}
@@ -217,11 +212,7 @@ export default function UnitProfilePage() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base">Add User to Unit</CardTitle>
-                  <Button
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => setShowAddUser(false)}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => setShowAddUser(false)}>
                     Cancel
                   </Button>
                 </div>
@@ -238,11 +229,7 @@ export default function UnitProfilePage() {
                             <div className="font-semibold text-sm">{getUserDisplayName(user)}</div>
                             <div className="text-xs text-muted-foreground">{user.email}</div>
                           </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => addUserToUnit(user)}
-                          >
+                          <Button variant="outline" size="sm" onClick={() => addUserToUnit(user)}>
                             Add
                           </Button>
                         </div>

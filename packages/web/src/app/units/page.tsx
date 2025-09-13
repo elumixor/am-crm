@@ -105,7 +105,10 @@ export default function UnitsPage() {
                   </div>
 
                   <div className="text-sm text-muted-foreground">
-                    Users: <span className="font-medium">{(unit as any)?.users?.length ?? "Not available"}</span>
+                    Users:{" "}
+                    <span className="font-medium">
+                      {(unit as Unit & { users?: { id: string }[] })?.users?.length ?? "Not available"}
+                    </span>
                   </div>
 
                   <div className="flex justify-end">

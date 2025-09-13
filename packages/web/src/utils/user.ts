@@ -13,7 +13,7 @@ interface UserLike {
 /**
  * Get the display name for a user, with fallback logic
  */
-export const getUserDisplayName = (user: UserLike): string => 
+export const getUserDisplayName = (user: UserLike): string =>
   user.displayName ?? user.spiritualName ?? user.worldlyName ?? user.email;
 
 /**

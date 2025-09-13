@@ -56,7 +56,7 @@ export default function UserProfileView() {
   }
 
   const mentor = user.mentorId ? allUsers.find((u) => u.id === user.mentorId) : null;
-  const mentees = (user.menteeIds ?? []).map(id => allUsers.find(u => u.id === id)).filter(Boolean) as User[];
+  const mentees = (user.menteeIds ?? []).map((id) => allUsers.find((u) => u.id === id)).filter(Boolean) as User[];
   const isOwnProfile = userId === id;
   const displayName = getUserDisplayName(user);
 

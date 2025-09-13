@@ -34,9 +34,7 @@ export const UserChip: React.FC<UserChipProps> = ({ user, onRemove, size = 28, s
     <>
       <Avatar className="flex-shrink-0" style={{ width: size, height: size }}>
         <AvatarImage src={photoUrl ?? undefined} alt={displayName} />
-        <AvatarFallback className="text-xs font-semibold">
-          {initials}
-        </AvatarFallback>
+        <AvatarFallback className="text-xs font-semibold">{initials}</AvatarFallback>
       </Avatar>
       <span className="text-xs truncate">{displayName}</span>
     </>
@@ -45,7 +43,10 @@ export const UserChip: React.FC<UserChipProps> = ({ user, onRemove, size = 28, s
   return (
     <Badge variant="secondary" className="flex items-center gap-2 pr-1 max-w-60">
       {showLink ? (
-        <Link href={`/users/${user.id}`} className="flex items-center gap-2 flex-1 min-w-0 no-underline hover:no-underline">
+        <Link
+          href={`/users/${user.id}`}
+          className="flex items-center gap-2 flex-1 min-w-0 no-underline hover:no-underline"
+        >
           {content}
         </Link>
       ) : (

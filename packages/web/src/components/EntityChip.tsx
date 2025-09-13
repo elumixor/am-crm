@@ -42,18 +42,12 @@ export const EntityChip: React.FC<EntityChipProps> = ({ id, type, name, href, ph
   return (
     <Badge variant="secondary" className="flex items-center gap-2 pr-1 max-w-60">
       <Link href={href} className="flex items-center gap-2 flex-1 min-w-0 no-underline hover:no-underline">
-        <Avatar 
-          className={cn(
-            "flex-shrink-0",
-            type === "unit" ? "rounded-md" : "rounded-full"
-          )} 
+        <Avatar
+          className={cn("flex-shrink-0", type === "unit" ? "rounded-md" : "rounded-full")}
           style={{ width: size, height: size }}
         >
           <AvatarImage src={photoUrl ?? undefined} alt={name} />
-          <AvatarFallback className={cn(
-            "text-xs font-semibold",
-            type === "unit" ? "rounded-md" : "rounded-full"
-          )}>
+          <AvatarFallback className={cn("text-xs font-semibold", type === "unit" ? "rounded-md" : "rounded-full")}>
             {initials}
           </AvatarFallback>
         </Avatar>

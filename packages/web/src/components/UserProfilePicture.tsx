@@ -23,7 +23,7 @@ export const UserProfilePicture: React.FC<UserProfilePictureProps> = ({
 }) => {
   const sizeMap = {
     sm: "w-8 h-8",
-    md: "w-10 h-10", 
+    md: "w-10 h-10",
     lg: "w-16 h-16",
     xl: "w-30 h-30",
   };
@@ -51,22 +51,20 @@ export const UserProfilePicture: React.FC<UserProfilePictureProps> = ({
 
   if (onClick) {
     return (
-      <button 
-        type="button" 
+      <button
+        type="button"
         onClick={onClick}
         className={cn(
           "relative transition-all duration-200",
           editable && "hover:opacity-80",
-          loading && "animate-pulse"
+          loading && "animate-pulse",
         )}
         disabled={loading}
       >
         {avatarElement}
         {editable && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 hover:opacity-100 transition-opacity">
-            <span className="text-white text-xs font-medium">
-              {loading ? "Uploading..." : "Change"}
-            </span>
+            <span className="text-white text-xs font-medium">{loading ? "Uploading..." : "Change"}</span>
           </div>
         )}
       </button>

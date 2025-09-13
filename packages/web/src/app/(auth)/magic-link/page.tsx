@@ -39,9 +39,9 @@ export default function MagicLinkPage() {
 
     try {
       const response = await fetch(`/api/auth/magic-link/${token}`);
-      
+
       if (response.ok) {
-        const info = await response.json() as MagicLinkInfo;
+        const info = (await response.json()) as MagicLinkInfo;
         setLinkInfo(info);
       } else {
         const errorData = await response.json();
@@ -54,44 +54,47 @@ export default function MagicLinkPage() {
     }
   }, [token]);
 
-  const completeMagicLink = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!token || !password.trim()) return;
-    
-    setSubmitting(true);
-    setError(null);
+  const completeMagicLink = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
 
-    try {
-      const response = await fetch("/api/auth/complete-magic-link", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          token,
-          password,
-          spiritualName: spiritualName.trim() || undefined,
-          worldlyName: worldlyName.trim() || undefined,
-          preferredName: preferredName.trim() || undefined
-        })
-      });
+      if (!token || !password.trim()) return;
 
-      if (response.ok) {
-        const result = await response.json();
-        // Store auth token and redirect to dashboard
-        localStorage.setItem("authToken", result.token);
-        router.push("/");
-      } else {
-        const errorData = await response.json();
-        setError(errorData.error || "Failed to create account");
+      setSubmitting(true);
+      setError(null);
+
+      try {
+        const response = await fetch("/api/auth/complete-magic-link", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            token,
+            password,
+            spiritualName: spiritualName.trim() || undefined,
+            worldlyName: worldlyName.trim() || undefined,
+            preferredName: preferredName.trim() || undefined,
+          }),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          // Store auth token and redirect to dashboard
+          localStorage.setItem("authToken", result.token);
+          router.push("/");
+        } else {
+          const errorData = await response.json();
+          setError(errorData.error || "Failed to create account");
+        }
+      } catch (_err) {
+        setError("Failed to create account");
+      } finally {
+        setSubmitting(false);
       }
-    } catch (_err) {
-      setError("Failed to create account");
-    } finally {
-      setSubmitting(false);
-    }
-  }, [token, password, spiritualName, worldlyName, preferredName, router]);
+    },
+    [token, password, spiritualName, worldlyName, preferredName, router],
+  );
 
   useEffect(() => {
     void loadMagicLinkInfo();
@@ -114,9 +117,7 @@ export default function MagicLinkPage() {
         <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
           <div className="text-center">
             <div className="text-red-500 text-4xl mb-4">⚠️</div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Invalid Magic Link
-            </h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Invalid Magic Link</h1>
             <p className="text-gray-600 mb-4">{error}</p>
             <button
               onClick={() => router.push("/")}
@@ -134,15 +135,11 @@ export default function MagicLinkPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Create Your Account
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Create Your Account</h1>
           <p className="text-gray-600">
             You've been invited by{" "}
             <strong>
-              {linkInfo?.createdBy.spiritualName ||
-                linkInfo?.createdBy.displayName ||
-                linkInfo?.createdBy.email}
+              {linkInfo?.createdBy.spiritualName || linkInfo?.createdBy.displayName || linkInfo?.createdBy.email}
             </strong>
           </p>
           <p className="text-sm text-gray-500 mt-1">
@@ -232,9 +229,7 @@ export default function MagicLinkPage() {
         </form>
 
         <div className="mt-4 text-center">
-          <p className="text-xs text-gray-500">
-            Expires: {new Date(linkInfo?.expiresAt || "").toLocaleString()}
-          </p>
+          <p className="text-xs text-gray-500">Expires: {new Date(linkInfo?.expiresAt || "").toLocaleString()}</p>
         </div>
       </div>
     </div>
