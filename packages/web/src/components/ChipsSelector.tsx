@@ -1,4 +1,7 @@
 "use client";
+import { Input } from "components/shad/input";
+import { Label } from "components/shad/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "components/shad/select";
 import { useState } from "react";
 import { EntityChip } from "./EntityChip";
 
@@ -30,31 +33,33 @@ export function ChipsSelector(props: ChipsSelectorProps) {
 
   return (
     <div className="space-y-4">
-      {label && <span className="text-sm font-medium">{label}</span>}
-      <div className="flex flex-row gap-2 items-center">
-        <input
-          placeholder={placeholder || "Search..."}
+      {label && <Label className="text-sm font-medium">{label}</Label>}
+      <div className="flex gap-2">
+        <Input
+          placeholder={placeholder ?? "Search..."}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
+          className="flex-1"
         />
-        <select
+        <Select
           value=""
-          onChange={(e) => {
-            const id = e.target.value;
+          onValueChange={(id) => {
             if (!id) return;
             onChange([...selectedIds, id]);
             setQuery("");
           }}
-          className="px-3 py-2 border border-gray-300 rounded-md"
         >
-          <option value="">Add...</option>
-          {filtered.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.label}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger className="w-32">
+            <SelectValue placeholder="Add..." />
+          </SelectTrigger>
+          <SelectContent>
+            {filtered.map((i: ChipsSelectorItem) => (
+              <SelectItem key={i.id} value={i.id}>
+                {i.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       {selectedIds.length > 0 && (
         <div className="flex flex-wrap gap-2">
@@ -65,11 +70,12 @@ export function ChipsSelector(props: ChipsSelectorProps) {
               <EntityChip
                 key={id}
                 id={id}
-                type={item.entityType || "user"}
-                name={item.label}
-                href={item.href || `/users/${id}`}
-                photoUrl={item.photoUrl}
-                onRemove={() => onChange(selectedIds.filter((sid) => sid !== id))}
+                type={item?.entityType ?? "user"}
+                name={item?.label ?? id}
+                href={item?.href ?? "#"}
+                photoUrl={item?.photoUrl}
+                onRemove={() => onChange(selectedIds.filter((x) => x !== id))}
+                size={24}
               />
             );
           })}

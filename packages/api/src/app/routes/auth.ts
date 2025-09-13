@@ -74,49 +74,60 @@ export const auth = new Hono()
     }
   })
   // Create magic link invitation (authenticated)
-  .post("/create-magic-link", authMiddleware, zValidator("json", z.object({
-    email: z.email()
-  })), async (c) => {
-    const { email } = c.req.valid("json");
-    const { userId: createdBy } = requireAuth(c);
+  .post(
+    "/create-magic-link",
+    authMiddleware,
+    zValidator(
+      "json",
+      z.object({
+        email: z.email(),
+      }),
+    ),
+    async (c) => {
+      const { email } = c.req.valid("json");
+      const { userId: createdBy } = requireAuth(c);
 
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({ where: { email } });
-    if (existingUser) {
-      return c.json({ error: "User with this email already exists" }, 400);
-    }
-
-    // Check if there's already an unused magic link for this email
-    const existingInvitation = await prisma.magicLinkInvitation.findFirst({
-      where: {
-        email,
-        usedAt: null,
-        expiresAt: { gt: new Date() }
+      // Check if user already exists
+      const existingUser = await prisma.user.findUnique({ where: { email } });
+      if (existingUser) {
+        return c.json({ error: "User with this email already exists" }, 400);
       }
-    });
 
-    if (existingInvitation) {
-      return c.json({ 
-        token: existingInvitation.token,
-        expiresAt: existingInvitation.expiresAt
+      // Check if there's already an unused magic link for this email
+      const existingInvitation = await prisma.magicLinkInvitation.findFirst({
+        where: {
+          email,
+          usedAt: null,
+          expiresAt: { gt: new Date() },
+        },
       });
-    }
 
-    // Create new magic link invitation (expires in 7 days)
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-    const invitation = await prisma.magicLinkInvitation.create({
-      data: {
-        email,
-        createdBy,
-        expiresAt
+      if (existingInvitation) {
+        return c.json({
+          token: existingInvitation.token,
+          expiresAt: existingInvitation.expiresAt,
+        });
       }
-    });
 
-    return c.json({ 
-      token: invitation.token,
-      expiresAt: invitation.expiresAt
-    }, 201);
-  })
+      // Create new magic link invitation (expires in 7 days)
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      const invitation = await prisma.magicLinkInvitation.create({
+        data: {
+          email,
+          createdBy,
+          expiresAt,
+        },
+      });
+
+      return c.json(
+        {
+          token: invitation.token,
+          expiresAt: invitation.expiresAt,
+        },
+        201,
+      );
+    },
+  )
   // Get magic link information
   .get("/magic-link/:token", async (c) => {
     const token = c.req.param("token");
@@ -132,10 +143,10 @@ export const auth = new Hono()
             spiritualName: true,
             worldlyName: true,
             displayName: true,
-            email: true
-          }
-        }
-      }
+            email: true,
+          },
+        },
+      },
     });
 
     if (!invitation) {
@@ -153,81 +164,91 @@ export const auth = new Hono()
     return c.json({
       email: invitation.email,
       expiresAt: invitation.expiresAt,
-      createdBy: invitation.creator
+      createdBy: invitation.creator,
     });
   })
   // Complete magic link registration
-  .post("/complete-magic-link", zValidator("json", z.object({
-    token: z.string(),
-    password: z.string().min(6),
-    spiritualName: z.string().optional(),
-    worldlyName: z.string().optional(),
-    preferredName: z.string().optional()
-  })), async (c) => {
-    const { token, password, spiritualName, worldlyName, preferredName } = c.req.valid("json");
+  .post(
+    "/complete-magic-link",
+    zValidator(
+      "json",
+      z.object({
+        token: z.string(),
+        password: z.string().min(6),
+        spiritualName: z.string().optional(),
+        worldlyName: z.string().optional(),
+        preferredName: z.string().optional(),
+      }),
+    ),
+    async (c) => {
+      const { token, password, spiritualName, worldlyName, preferredName } = c.req.valid("json");
 
-    // Find and validate magic link
-    const invitation = await prisma.magicLinkInvitation.findUnique({
-      where: { token }
-    });
-
-    if (!invitation) {
-      return c.json({ error: "Invalid magic link" }, 404);
-    }
-
-    if (invitation.usedAt) {
-      return c.json({ error: "Magic link has already been used" }, 410);
-    }
-
-    if (invitation.expiresAt < new Date()) {
-      return c.json({ error: "Magic link has expired" }, 410);
-    }
-
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({ 
-      where: { email: invitation.email } 
-    });
-    if (existingUser) {
-      return c.json({ error: "User with this email already exists" }, 400);
-    }
-
-    // Create user and mark invitation as used
-    const passwordHash = await hashPassword(password);
-    
-    const user = await prisma.$transaction(async (tx: typeof prisma) => {
-      // Create the user
-      const newUser = await tx.user.create({
-        data: {
-          email: invitation.email,
-          passwordHash,
-          spiritualName,
-          worldlyName,
-          preferredName,
-          displayName: preferredName || spiritualName || worldlyName
-        }
-      });
-
-      // Mark invitation as used
-      await tx.magicLinkInvitation.update({
+      // Find and validate magic link
+      const invitation = await prisma.magicLinkInvitation.findUnique({
         where: { token },
-        data: { usedAt: new Date() }
       });
 
-      return newUser;
-    });
-
-    // Auto-login the new user
-    const authToken = await generateToken(user.id);
-    
-    return c.json({ 
-      token: authToken,
-      user: {
-        id: user.id,
-        email: user.email,
-        spiritualName: user.spiritualName,
-        worldlyName: user.worldlyName,
-        preferredName: user.preferredName,
-        displayName: user.displayName
+      if (!invitation) {
+        return c.json({ error: "Invalid magic link" }, 404);
       }
-    }, 201);
-  });
+
+      if (invitation.usedAt) {
+        return c.json({ error: "Magic link has already been used" }, 410);
+      }
+
+      if (invitation.expiresAt < new Date()) {
+        return c.json({ error: "Magic link has expired" }, 410);
+      }
+
+      // Check if user already exists
+      const existingUser = await prisma.user.findUnique({
+        where: { email: invitation.email },
+      });
+      if (existingUser) {
+        return c.json({ error: "User with this email already exists" }, 400);
+      }
+
+      // Create user and mark invitation as used
+      const passwordHash = await hashPassword(password);
+
+      const user = await prisma.$transaction(async (tx: typeof prisma) => {
+        // Create the user
+        const newUser = await tx.user.create({
+          data: {
+            email: invitation.email,
+            passwordHash,
+            spiritualName,
+            worldlyName,
+            preferredName,
+            displayName: preferredName || spiritualName || worldlyName,
+          },
+        });
+
+        // Mark invitation as used
+        await tx.magicLinkInvitation.update({
+          where: { token },
+          data: { usedAt: new Date() },
+        });
+
+        return newUser;
+      });
+
+      // Auto-login the new user
+      const authToken = await generateToken(user.id);
+
+      return c.json(
+        {
+          token: authToken,
+          user: {
+            id: user.id,
+            email: user.email,
+            spiritualName: user.spiritualName,
+            worldlyName: user.worldlyName,
+            preferredName: user.preferredName,
+            displayName: user.displayName,
+          },
+        },
+        201,
+      );
+    },
+  );

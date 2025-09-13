@@ -1,6 +1,6 @@
-import Image from "next/image";
-import type React from "react";
-import styles from "./UserProfilePicture.module.scss";
+import { Avatar, AvatarFallback, AvatarImage } from "components/shad/avatar";
+import { cn } from "lib/cn";
+import React from "react";
 
 export interface UserProfilePictureProps {
   src?: string | null;
@@ -21,59 +21,55 @@ export const UserProfilePicture: React.FC<UserProfilePictureProps> = ({
   editable = false,
   loading = false,
 }) => {
-  const pictureClasses = [
-    styles.picture,
-    styles[`picture--${size}`],
-    editable && styles["picture--editable"],
-    loading && styles["picture--loading"],
-    className,
-  ]
-    .filter(Boolean)
-    .join(" ");
-
   const sizeMap = {
-    sm: 32,
-    md: 40,
-    lg: 64,
-    xl: 120,
+    sm: "w-8 h-8",
+    md: "w-10 h-10",
+    lg: "w-16 h-16",
+    xl: "w-30 h-30",
   };
 
-  const pictureSize = sizeMap[size];
+  const sizeClass = sizeMap[size];
 
-  const handleClick = () => {
-    if (onClick && (editable || onClick)) {
-      onClick();
+  const initials = React.useMemo(() => {
+    const name = alt || "";
+    const parts = name.split(" ").filter(Boolean);
+    if (parts.length >= 2) {
+      return (parts[0]?.[0] + parts[1]?.[0]).toUpperCase();
     }
-  };
+    if (parts.length === 1) {
+      return parts[0]?.slice(0, 2).toUpperCase() || "?";
+    }
+    return "?";
+  }, [alt]);
 
-  return onClick ? (
-    <button type="button" className={pictureClasses} onClick={handleClick}>
-      {src ? (
-        <Image src={src} alt={alt} width={pictureSize} height={pictureSize} className={styles.image} />
-      ) : (
-        <div className={styles.placeholder}>
-          <svg className={styles.placeholderIcon} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-          </svg>
-        </div>
-      )}
-      {editable && (
-        <div className={styles.overlay}>
-          <div className={styles.overlayText}>{loading ? "Uploading..." : "Change Photo"}</div>
-        </div>
-      )}
-    </button>
-  ) : (
-    <div className={pictureClasses}>
-      {src ? (
-        <Image src={src} alt={alt} width={pictureSize} height={pictureSize} className={styles.image} />
-      ) : (
-        <div className={styles.placeholder}>
-          <svg className={styles.placeholderIcon} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-          </svg>
-        </div>
-      )}
-    </div>
+  const avatarElement = (
+    <Avatar className={cn(sizeClass, className)}>
+      <AvatarImage src={src || undefined} alt={alt} />
+      <AvatarFallback>{initials}</AvatarFallback>
+    </Avatar>
   );
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={cn(
+          "relative transition-all duration-200",
+          editable && "hover:opacity-80",
+          loading && "animate-pulse",
+        )}
+        disabled={loading}
+      >
+        {avatarElement}
+        {editable && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 hover:opacity-100 transition-opacity">
+            <span className="text-white text-xs font-medium">{loading ? "Uploading..." : "Change"}</span>
+          </div>
+        )}
+      </button>
+    );
+  }
+
+  return avatarElement;
 };

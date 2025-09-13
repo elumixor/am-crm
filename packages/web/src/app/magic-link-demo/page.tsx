@@ -7,35 +7,27 @@ export default function MagicLinkDemoPage() {
   const [createdLinks, setCreatedLinks] = useState<Array<{ email: string; link: string; createdAt: Date }>>([]);
 
   const handleLinkCreated = (link: string, email: string) => {
-    setCreatedLinks(prev => [...prev, { email, link, createdAt: new Date() }]);
+    setCreatedLinks((prev) => [...prev, { email, link, createdAt: new Date() }]);
   };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Magic Link Authorization System
-          </h1>
-          <p className="text-gray-600">
-            Demo page showing the magic link creation and usage flow
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Magic Link Authorization System</h1>
+          <p className="text-gray-600">Demo page showing the magic link creation and usage flow</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Magic Link Creator */}
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              For Acaryas: Create Magic Links
-            </h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">For Acaryas: Create Magic Links</h2>
             <MagicLinkCreator onLinkCreated={handleLinkCreated} />
           </div>
 
           {/* Created Links History */}
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Created Magic Links
-            </h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Created Magic Links</h2>
             <div className="bg-white rounded-lg shadow-md border border-gray-200">
               {createdLinks.length === 0 ? (
                 <div className="p-6 text-center text-gray-500">
@@ -48,9 +40,7 @@ export default function MagicLinkDemoPage() {
                       <div className="flex justify-between items-start">
                         <div>
                           <p className="font-medium text-gray-900">{item.email}</p>
-                          <p className="text-xs text-gray-500">
-                            {item.createdAt.toLocaleString()}
-                          </p>
+                          <p className="text-xs text-gray-500">{item.createdAt.toLocaleString()}</p>
                         </div>
                         <button
                           onClick={() => navigator.clipboard.writeText(item.link)}
@@ -60,9 +50,7 @@ export default function MagicLinkDemoPage() {
                         </button>
                       </div>
                       <div className="mt-2">
-                        <p className="text-xs text-gray-400 break-all">
-                          {item.link}
-                        </p>
+                        <p className="text-xs text-gray-400 break-all">{item.link}</p>
                       </div>
                     </div>
                   ))}
@@ -74,9 +62,7 @@ export default function MagicLinkDemoPage() {
 
         {/* Demo Instructions */}
         <div className="mt-8 bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Demo Instructions
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Demo Instructions</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h4 className="font-medium text-gray-900 mb-2">Step 1: Create Magic Link</h4>
@@ -101,9 +87,7 @@ export default function MagicLinkDemoPage() {
 
         {/* API Endpoints Documentation */}
         <div className="mt-8 bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            API Endpoints
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">API Endpoints</h3>
           <div className="space-y-4 text-sm">
             <div className="border border-gray-200 rounded p-3">
               <div className="font-mono text-blue-600 mb-1">POST /auth/create-magic-link</div>

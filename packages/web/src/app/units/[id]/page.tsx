@@ -1,10 +1,15 @@
 "use client";
+import type { Unit } from "@am-crm/db";
+import { Button } from "components/shad/button";
+import { Card, CardContent, CardHeader, CardTitle } from "components/shad/card";
+import { Input } from "components/shad/input";
+import { Textarea } from "components/shad/textarea";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "contexts/AuthContext";
 import { client, validJson } from "services/http";
 import { z } from "zod";
-import ui from "./styles.module.scss";
 
 interface UnitUser {
   id: string;
@@ -18,17 +23,14 @@ interface UnitUser {
   whatsapp: string | null;
 }
 
-interface UnitDetail {
-  id: string;
-  name: string;
-  description: string | null;
-  users: UnitUser[];
+interface UnitWithUsers extends Unit {
+  users: UnitUser[]; // from detail endpoint
 }
 
 function getUserDisplayName(user: UnitUser): string {
   if (user.displayName) return user.displayName;
   if (user.preferredName) return user.preferredName;
-  
+
   switch (user.preferredNameType) {
     case "spiritual":
       return user.spiritualName || user.worldlyName || user.email;
@@ -41,20 +43,18 @@ function getUserDisplayName(user: UnitUser): string {
   }
 }
 
-const updateUnitSchema = z
-  .object({
-    name: z.string().min(1),
-    description: z.string().nullable().optional(),
-    userIds: z.array(z.string()),
-  })
-  .optional();
+const updateUnitSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().nullable().optional(),
+  userIds: z.array(z.string()),
+});
 
 export default function UnitProfilePage() {
   const params = useParams();
   const router = useRouter();
   const { userId } = useAuth();
   const id = params?.id as string;
-  const [unit, setUnit] = useState<UnitDetail | null>(null);
+  const [unit, setUnit] = useState<UnitWithUsers | null>(null);
   const [saving, setSaving] = useState(false);
   const [availableUsers, setAvailableUsers] = useState<UnitUser[]>([]);
   const [showAddUser, setShowAddUser] = useState(false);
@@ -87,13 +87,13 @@ export default function UnitProfilePage() {
     }
   }, [canManageUnit, showAddUser]);
 
-  function update<K extends keyof UnitDetail>(key: K, value: UnitDetail[K]) {
+  function update<K extends keyof UnitWithUsers>(key: K, value: UnitWithUsers[K]) {
     setUnit((u) => (u ? { ...u, [key]: value } : u));
   }
 
   function addUserToUnit(user: UnitUser) {
     if (!unit) return;
-    const isAlreadyMember = unit.users.some(u => u.id === user.id);
+    const isAlreadyMember = unit.users.some((u) => u.id === user.id);
     if (!isAlreadyMember) {
       update("users", [...unit.users, user]);
     }
@@ -102,7 +102,10 @@ export default function UnitProfilePage() {
 
   function removeUserFromUnit(userId: string) {
     if (!unit) return;
-    update("users", unit.users.filter(u => u.id !== userId));
+    update(
+      "users",
+      unit.users.filter((u) => u.id !== userId),
+    );
   }
 
   async function save() {
@@ -121,127 +124,135 @@ export default function UnitProfilePage() {
     }
   }
 
-  if (!unit) return <main className={ui.main}>Loading...</main>;
+  if (!unit) {
+    return (
+      <main className="container mx-auto px-4 py-8 flex justify-center items-center h-64">
+        <p className="text-lg text-muted-foreground">Loading...</p>
+      </main>
+    );
+  }
 
   // Filter available users to only show those not already in the unit
-  const usersToAdd = availableUsers.filter(user => !unit.users.some(u => u.id === user.id));
+  const usersToAdd = availableUsers.filter((user) => !unit.users.some((u) => u.id === user.id));
 
   return (
-    <main className={`${ui.container} ${ui.main} ${ui.max800}`}>
-      <a href="/units" className={ui.link}>
-        ← Back to units
-      </a>
-      <h1 className={ui.mt12}>Unit: {unit.name}</h1>
-      <div className={ui.gridGap16}>
-        <label className={ui.gridGap4}>
-          <span className={ui.labelSm}>Name</span>
-          <input 
-            value={unit.name} 
-            onChange={(e) => update("name", e.target.value)}
-            disabled={!canManageUnit}
-          />
-        </label>
-        <label className={ui.gridGap4}>
-          <span className={ui.labelSm}>Description</span>
-          <textarea
-            value={unit.description || ""}
-            onChange={(e) => update("description", e.target.value ?? null)}
-            rows={3}
-            disabled={!canManageUnit}
-          />
-        </label>
+    <main className="container mx-auto px-4 py-8 max-w-2xl">
+      <div className="mb-6">
+        <Button variant="ghost" asChild>
+          <Link href="/units">← Back to units</Link>
+        </Button>
+      </div>
 
-        {/* Unit Members Section */}
-        <div className={ui.gridGap4}>
-          <div className={ui.flexRowGap8}>
-            <span className={ui.labelSm}>Members ({unit.users.length})</span>
-            {canManageUnit && (
-              <button 
-                type="button" 
-                onClick={() => setShowAddUser(true)}
-                className={ui.textPrimary}
-              >
-                + Add Member
-              </button>
-            )}
+      <Card>
+        <CardHeader>
+          <CardTitle>Edit Unit: {unit.name}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div>
+            <span className="text-sm font-medium text-muted-foreground mb-2 block">Name</span>
+            <Input
+              value={unit.name}
+              onChange={(e) => update("name", e.target.value)}
+              placeholder="Unit name"
+              disabled={!canManageUnit}
+            />
           </div>
-          
-          {unit.users.length === 0 ? (
-            <p className={ui.textMuted}>No members yet.</p>
-          ) : (
-            <div className={ui.gridGap8}>
-              {unit.users.map((user) => (
-                <div key={user.id} className={`${ui.flexRow} ${ui.p12} ${ui.border} ${ui.rounded}`}>
-                  <div className={ui.flex1}>
-                    <div className={ui.fontSemibold}>{getUserDisplayName(user)}</div>
-                    <div className={ui.textSm}>{user.email}</div>
-                    {user.telegram && (
-                      <div className={ui.textSm}>Telegram: {user.telegram}</div>
-                    )}
-                  </div>
-                  {canManageUnit && (
-                    <button
-                      type="button"
-                      onClick={() => removeUserFromUnit(user.id)}
-                      className={ui.textDanger}
-                    >
-                      Remove
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
 
-        {/* Add User Modal/Dropdown */}
-        {showAddUser && canManageUnit && (
-          <div className={`${ui.gridGap8} ${ui.p12} ${ui.border} ${ui.rounded}`}>
-            <div className={ui.flexRowGap8}>
-              <span className={ui.labelSm}>Add User to Unit</span>
-              <button
-                type="button"
-                onClick={() => setShowAddUser(false)}
-                className={ui.textMuted}
-              >
-                Cancel
-              </button>
-            </div>
-            <div className={ui.gridGap8}>
-              {usersToAdd.length === 0 ? (
-                <p className={ui.textMuted}>All users are already members of this unit.</p>
-              ) : (
-                usersToAdd.map((user) => (
-                  <div key={user.id} className={`${ui.flexRow} ${ui.p8} ${ui.border} ${ui.rounded}`}>
-                    <div className={ui.flex1}>
-                      <div className={ui.fontSemibold}>{getUserDisplayName(user)}</div>
-                      <div className={ui.textSm}>{user.email}</div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => addUserToUnit(user)}
-                      className={ui.textPrimary}
-                    >
-                      Add
-                    </button>
-                  </div>
-                ))
+          <div>
+            <span className="text-sm font-medium text-muted-foreground mb-2 block">Description</span>
+            <Textarea
+              value={unit.description ?? ""}
+              onChange={(e) => update("description", e.target.value || null)}
+              rows={3}
+              placeholder="Unit description"
+              disabled={!canManageUnit}
+            />
+          </div>
+
+          {/* Unit Members Section */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-muted-foreground">Members ({unit.users.length})</span>
+              {canManageUnit && (
+                <Button variant="outline" size="sm" onClick={() => setShowAddUser(true)}>
+                  Add Member
+                </Button>
               )}
             </div>
-          </div>
-        )}
 
-        {canManageUnit && (
-          <div className={ui.flexRowGap12}>
-            <button type="button" onClick={save} disabled={saving}>
-              {saving ? "Saving..." : "Save"}
-            </button>
-            <button type="button" onClick={() => router.push("/units")}>
-              Cancel
-            </button>
+            {unit.users.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No members yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {unit.users.map((user) => (
+                  <Card key={user.id} className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="font-semibold text-sm">{getUserDisplayName(user)}</div>
+                        <div className="text-xs text-muted-foreground">{user.email}</div>
+                        {user.telegram && (
+                          <div className="text-xs text-muted-foreground">Telegram: {user.telegram}</div>
+                        )}
+                      </div>
+                      {canManageUnit && (
+                        <Button variant="destructive" size="sm" onClick={() => removeUserFromUnit(user.id)}>
+                          Remove
+                        </Button>
+                      )}
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </div>
+
+          {/* Add User Modal/Section */}
+          {showAddUser && canManageUnit && (
+            <Card className="border-dashed">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">Add User to Unit</CardTitle>
+                  <Button variant="ghost" size="sm" onClick={() => setShowAddUser(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {usersToAdd.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">All users are already members of this unit.</p>
+                  ) : (
+                    usersToAdd.map((user) => (
+                      <Card key={user.id} className="p-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="font-semibold text-sm">{getUserDisplayName(user)}</div>
+                            <div className="text-xs text-muted-foreground">{user.email}</div>
+                          </div>
+                          <Button variant="outline" size="sm" onClick={() => addUserToUnit(user)}>
+                            Add
+                          </Button>
+                        </div>
+                      </Card>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {canManageUnit && (
+            <div className="flex gap-4 pt-4">
+              <Button onClick={save} disabled={saving}>
+                {saving ? "Saving..." : "Save Changes"}
+              </Button>
+              <Button variant="outline" onClick={() => router.push("/units")}>
+                Cancel
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </main>
   );
 }
