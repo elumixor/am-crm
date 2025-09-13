@@ -1,4 +1,5 @@
 "use client";
+import type { Unit } from "@am-crm/db";
 import { Button } from "components/shad/button";
 import { Card, CardContent, CardHeader, CardTitle } from "components/shad/card";
 import { Input } from "components/shad/input";
@@ -8,49 +9,45 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 
-interface UnitDetail {
-  id: string;
-  name: string;
-  description: string | null;
+interface UnitWithUsers extends Unit {
   users: { id: string }[]; // from detail endpoint
 }
 
-const updateUnitSchema = z
-  .object({
-    name: z.string().min(1),
-    description: z.string().nullable().optional(),
-    userIds: z.array(z.string()),
-  })
-  .optional();
+const updateUnitSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().nullable().optional(),
+  userIds: z.array(z.string()),
+});
 
 export default function UnitProfilePage() {
   const params = useParams();
   const router = useRouter();
   const id = params?.id as string;
-  const [unit, setUnit] = useState<UnitDetail | null>(null);
+  const [unit, setUnit] = useState<UnitWithUsers | null>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     void (async () => {
+      // TODO: Uncomment when API is ready
       // const unit = await validJson(client.units[":id"].$get({ param: { id } }));
       // setUnit(unit);
     })();
   }, [id]);
 
-  function update<K extends keyof UnitDetail>(key: K, value: UnitDetail[K]) {
-    setUnit((u) => (u ? { ...u, [key]: value } : u));
-  }
+  const update = <K extends keyof UnitWithUsers>(key: K, value: UnitWithUsers[K]) =>
+    setUnit((u) => u ? { ...u, [key]: value } : u);
 
-  async function save() {
+  const save = async () => {
     if (!unit) return;
     setSaving(true);
     const payload = { name: unit.name, description: unit.description, userIds: unit.users.map((u) => u.id) };
     updateUnitSchema.parse(payload);
 
+    // TODO: Uncomment when API is ready
     // await client.units[":id"].$put({ param: { id: unit.id }, json: payload });
     setSaving(false);
     router.refresh();
-  }
+  };
 
   if (!unit) {
     return (
@@ -81,7 +78,7 @@ export default function UnitProfilePage() {
           <div>
             <span className="text-sm font-medium text-muted-foreground mb-2 block">Description</span>
             <Textarea
-              value={unit.description || ""}
+              value={unit.description ?? ""}
               onChange={(e) => update("description", e.target.value || null)}
               rows={3}
               placeholder="Unit description"

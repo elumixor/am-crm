@@ -1,19 +1,11 @@
 "use client";
+import type { User } from "@am-crm/shared";
 import { Avatar, AvatarFallback, AvatarImage } from "components/shad/avatar";
 import { Badge } from "components/shad/badge";
 import { Button } from "components/shad/button";
 import Link from "next/link";
 import React from "react";
-
-export interface User {
-  id: string;
-  displayName?: string | null;
-  spiritualName?: string | null;
-  worldlyName?: string | null;
-  preferredName?: string | null;
-  preferredNameType?: string | null;
-  photoKey?: string | null;
-}
+import { getUserDisplayName, getUserInitials } from "utils/user";
 
 export interface UserChipProps {
   user: User;
@@ -24,47 +16,24 @@ export interface UserChipProps {
 
 export const UserChip: React.FC<UserChipProps> = ({ user, onRemove, size = 28, showLink = true }) => {
   const displayName = React.useMemo(() => {
-    if (user.preferredNameType === "spiritual" && user.spiritualName) {
-      return user.spiritualName;
-    }
-    if (user.preferredNameType === "worldly" && user.worldlyName) {
-      return user.worldlyName;
-    }
-    if (user.preferredNameType === "custom" && user.preferredName) {
-      return user.preferredName;
-    }
+    if (user.preferredNameType === "spiritual" && user.spiritualName) return user.spiritualName;
+    if (user.preferredNameType === "worldly" && user.worldlyName) return user.worldlyName;
+    if (user.preferredNameType === "custom" && user.preferredName) return user.preferredName;
     // Fallback logic
-    return user.displayName || user.spiritualName || user.worldlyName || user.preferredName || user.id;
+    return getUserDisplayName(user);
   }, [user]);
 
   const photoUrl = user.photoKey ? `/api/photo/${user.photoKey}` : null;
 
   const initials = React.useMemo(() => {
     if (photoUrl) return null;
-
-    const src = displayName || user.id;
-    const letters = src
-      .replace(/https?:\/\//, "")
-      .replace(/[^a-zA-Z0-9 ]/g, "")
-      .trim();
-
-    if (!letters) return "?";
-    const parts = letters.split(/\s+/).filter(Boolean);
-
-    if (parts.length === 1) return (parts[0] || "").slice(0, 2).toUpperCase();
-    if (parts.length >= 2) {
-      const a = parts[0]?.[0] || "";
-      const b = parts[1]?.[0] || "";
-      return (a + b).toUpperCase();
-    }
-
-    return "?";
-  }, [photoUrl, displayName, user.id]);
+    return getUserInitials({ ...user, displayName });
+  }, [photoUrl, user, displayName]);
 
   const content = (
     <>
       <Avatar className="flex-shrink-0" style={{ width: size, height: size }}>
-        <AvatarImage src={photoUrl || undefined} alt={displayName} />
+        <AvatarImage src={photoUrl ?? undefined} alt={displayName} />
         <AvatarFallback className="text-xs font-semibold">
           {initials}
         </AvatarFallback>

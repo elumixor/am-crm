@@ -9,6 +9,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { client, validJsonInternal } from "services/http";
 
+import { getUserDisplayName } from "utils/user";
+
 export default function UsersPage() {
   const [users] = useState<User[]>([]);
   const [units, setUnits] = useState<{ id: string; name: string }[]>([]);
@@ -59,16 +61,17 @@ export default function UsersPage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {users.map((user) => {
             const unit = units.find((u) => u.id === user.unitId);
-            const display = user.displayName || user.spiritualName || user.worldlyName || user.email;
+            const displayName = getUserDisplayName(user);
             const mentor = user.mentorId ? users.find((u) => u.id === user.mentorId) : null;
+            const menteeCount = user.menteeIds?.length ?? 0;
 
             return (
               <Card key={user.id} className="group hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
                     <Avatar className="w-12 h-12">
-                      <AvatarImage src={user.photoUrl || undefined} alt={display} />
-                      <AvatarFallback>{display.charAt(0).toUpperCase()}</AvatarFallback>
+                      <AvatarImage src={user.photoUrl ?? undefined} alt={displayName} />
+                      <AvatarFallback>{displayName.charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
 
                     <div className="flex-1 min-w-0">
@@ -76,7 +79,7 @@ export default function UsersPage() {
                         href={`/users/${user.id}`}
                         className="text-lg font-semibold hover:text-primary transition-colors"
                       >
-                        {display}
+                        {displayName}
                       </Link>
                       <p className="text-sm text-muted-foreground truncate">{user.email}</p>
 
@@ -89,13 +92,13 @@ export default function UsersPage() {
 
                         {mentor && (
                           <Badge variant="outline" className="text-xs">
-                            Mentor: {mentor.displayName || mentor.spiritualName || mentor.email}
+                            Mentor: {getUserDisplayName(mentor)}
                           </Badge>
                         )}
 
-                        {user.menteeIds && user.menteeIds.length > 0 && (
+                        {menteeCount > 0 && (
                           <Badge variant="outline" className="text-xs">
-                            {user.menteeIds.length} Mentee{user.menteeIds.length !== 1 ? "s" : ""}
+                            {menteeCount} Mentee{menteeCount !== 1 ? "s" : ""}
                           </Badge>
                         )}
                       </div>

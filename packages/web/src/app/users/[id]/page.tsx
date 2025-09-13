@@ -1,5 +1,6 @@
 "use client";
 
+import type { User } from "@am-crm/shared";
 import { Avatar, AvatarFallback, AvatarImage } from "components/shad/avatar";
 import { Badge } from "components/shad/badge";
 import { Button } from "components/shad/button";
@@ -9,33 +10,19 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { client, validJson } from "services/http";
-
-interface UserDto {
-  id: string;
-  email: string;
-  displayName: string | null;
-  spiritualName: string | null;
-  worldlyName: string | null;
-  telegramHandle: string | null;
-  whatsapp: string | null;
-  photoUrl: string | null;
-  unitId: string | null;
-  mentorId: string | null;
-  mentees: { id: string }[];
-}
+import { getUserDisplayName } from "utils/user";
 
 function LogoutButton() {
   const { logout } = useAuth();
   const router = useRouter();
 
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
+
   return (
-    <Button
-      variant="destructive"
-      onClick={() => {
-        logout();
-        router.push("/login");
-      }}
-    >
+    <Button variant="destructive" onClick={handleLogout}>
       Logout
     </Button>
   );
@@ -47,8 +34,8 @@ export default function UserProfileView() {
   const { userId } = useAuth();
   const router = useRouter();
 
-  const [user] = useState<UserDto | null>(null);
-  const [allUsers] = useState<UserDto[]>([]);
+  const [user] = useState<User | null>(null);
+  const [allUsers] = useState<User[]>([]);
 
   useEffect(() => {
     void (async () => {
@@ -69,9 +56,9 @@ export default function UserProfileView() {
   }
 
   const mentor = user.mentorId ? allUsers.find((u) => u.id === user.mentorId) : null;
-  const mentees = user.mentees.map(({ id }) => allUsers.find((u) => u.id === id)).filter(Boolean) as UserDto[];
+  const mentees = (user.menteeIds ?? []).map(id => allUsers.find(u => u.id === id)).filter(Boolean) as User[];
   const isOwnProfile = userId === id;
-  const displayName = user.displayName || user.spiritualName || user.worldlyName || user.email;
+  const displayName = getUserDisplayName(user);
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-4xl">
@@ -112,7 +99,7 @@ export default function UserProfileView() {
             </div>
 
             <div className="space-y-4">
-              <Field label="Telegram" value={user.telegramHandle} />
+              <Field label="Telegram" value={user.telegram} />
               <Field label="WhatsApp" value={user.whatsapp} />
             </div>
           </div>
@@ -124,11 +111,11 @@ export default function UserProfileView() {
                 {mentor ? (
                   <div className="flex items-center gap-3">
                     <Avatar className="w-8 h-8">
-                      <AvatarImage src={mentor.photoUrl || undefined} alt={mentor.displayName || mentor.email} />
-                      <AvatarFallback>{(mentor.displayName || mentor.email).charAt(0).toUpperCase()}</AvatarFallback>
+                      <AvatarImage src={mentor.photoUrl ?? undefined} alt={getUserDisplayName(mentor)} />
+                      <AvatarFallback>{getUserDisplayName(mentor).charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <Link href={`/users/${mentor.id}`} className="text-primary hover:underline">
-                      {mentor.displayName || mentor.spiritualName || mentor.email}
+                      {getUserDisplayName(mentor)}
                     </Link>
                   </div>
                 ) : (
@@ -147,7 +134,7 @@ export default function UserProfileView() {
                     {mentees.map((mentee) => (
                       <Link key={mentee.id} href={`/users/${mentee.id}`}>
                         <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80">
-                          {mentee.displayName || mentee.spiritualName || mentee.email}
+                          {getUserDisplayName(mentee)}
                         </Badge>
                       </Link>
                     ))}
@@ -162,11 +149,9 @@ export default function UserProfileView() {
   );
 }
 
-function Field({ label, value }: { label: string; value: string | null }) {
-  return (
-    <div>
-      <span className="text-sm font-medium text-muted-foreground">{label}</span>
-      <p className="mt-1">{value || "—"}</p>
-    </div>
-  );
-}
+const Field = ({ label, value }: { label: string; value: string | null }) => (
+  <div>
+    <span className="text-sm font-medium text-muted-foreground">{label}</span>
+    <p className="mt-1">{value ?? "—"}</p>
+  </div>
+);

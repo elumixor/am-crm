@@ -49,7 +49,7 @@ export const EntityChip: React.FC<EntityChipProps> = ({ id, type, name, href, ph
           )} 
           style={{ width: size, height: size }}
         >
-          <AvatarImage src={photoUrl || undefined} alt={name} />
+          <AvatarImage src={photoUrl ?? undefined} alt={name} />
           <AvatarFallback className={cn(
             "text-xs font-semibold",
             type === "unit" ? "rounded-md" : "rounded-full"

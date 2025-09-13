@@ -20,6 +20,7 @@ export default function UnitsPage() {
   const load = useCallback(async () => {
     setLoading(true);
     const response = await client.units.$get();
+    // TODO: Uncomment when API is ready
     // const { data } = await validJsonInternal(response);
     // setUnits(data);
     setLoading(false);
@@ -30,7 +31,7 @@ export default function UnitsPage() {
     void load();
   }, []);
 
-  async function createUnit() {
+  const createUnit = async () => {
     const payload = { name: newName.trim() };
     // Client-side validation mirrors API validator
     createUnitSchema.parse(payload);
@@ -39,13 +40,13 @@ export default function UnitsPage() {
       const unit = (await res.json()) as Unit;
       router.push(`/units/${unit.id}`);
     }
-  }
+  };
 
-  async function remove(id: string) {
+  const remove = async (id: string) => {
     if (!confirm("Delete unit?")) return;
     await client.units[":id"].$delete({ param: { id } });
     await load();
-  }
+  };
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-4xl">
@@ -96,11 +97,11 @@ export default function UnitsPage() {
                         {unit.name}
                       </a>
                     </h3>
-                    <p className="text-sm text-muted-foreground">{unit.description || "No description"}</p>
+                    <p className="text-sm text-muted-foreground">{unit.description ?? "No description"}</p>
                   </div>
 
                   <div className="text-sm text-muted-foreground">
-                    Users: <span className="font-medium">{"fix me"}</span>
+                    Users: <span className="font-medium">Not implemented yet</span>
                   </div>
 
                   <div className="flex justify-end">
