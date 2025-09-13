@@ -53,6 +53,9 @@ model User {
 
   // Lessons relation
   lessons UserLesson[]
+
+  // Magic link invitations created by this user
+  magicLinkInvitations MagicLinkInvitation[]
 }
 
 model UserLesson {
@@ -72,4 +75,17 @@ model Unit {
   unofficialRegisteredAt DateTime?
   officialRegisteredAt   DateTime?
   users                  User[]
+}
+
+model MagicLinkInvitation {
+  id        String   @id @default(cuid())
+  token     String   @unique @default(cuid())
+  email     String
+  createdBy String
+  creator   User     @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@map("magic_link_invitations")
 }
