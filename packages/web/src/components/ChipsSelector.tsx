@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { EntityChip } from "./EntityChip";
-import ui from "styles/ui.module.scss";
 
 export interface ChipsSelectorItem {
   id: string;
@@ -30,14 +29,14 @@ export function ChipsSelector(props: ChipsSelectorProps) {
     : pool.slice(0, 50);
 
   return (
-    <div className={ui.gridGap4}>
-      {label && <span className={`${ui.labelSm} ${ui.labelStatic}`}>{label}</span>}
-      <div className={ui.flexRowGap8}>
+    <div className="space-y-4">
+      {label && <span className="text-sm font-medium">{label}</span>}
+      <div className="flex flex-row gap-2 items-center">
         <input
           placeholder={placeholder || "Search..."}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          style={{ flex: 1 }}
+          className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
         />
         <select
           value=""
@@ -47,29 +46,30 @@ export function ChipsSelector(props: ChipsSelectorProps) {
             onChange([...selectedIds, id]);
             setQuery("");
           }}
+          className="px-3 py-2 border border-gray-300 rounded-md"
         >
           <option value="">Add...</option>
-          {filtered.map((i: ChipsSelectorItem) => (
-            <option key={i.id} value={i.id}>
-              {i.label}
+          {filtered.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.label}
             </option>
           ))}
         </select>
       </div>
       {selectedIds.length > 0 && (
-        <div className={ui.flexWrapGap8}>
+        <div className="flex flex-wrap gap-2">
           {selectedIds.map((id) => {
-            const item = items.find((x) => x.id === id);
+            const item = items.find((i) => i.id === id);
+            if (!item) return null;
             return (
               <EntityChip
                 key={id}
                 id={id}
-                type={item?.entityType || "user"}
-                name={item?.label || id}
-                href={item?.href || "#"}
-                photoUrl={item?.photoUrl}
-                onRemove={() => onChange(selectedIds.filter((x) => x !== id))}
-                size={24}
+                type={item.entityType || "user"}
+                name={item.label}
+                href={item.href || `/users/${id}`}
+                photoUrl={item.photoUrl}
+                onRemove={() => onChange(selectedIds.filter((sid) => sid !== id))}
               />
             );
           })}

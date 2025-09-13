@@ -1,5 +1,4 @@
 "use client";
-import type { Unit } from "@am-crm/db";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { client, validJsonInternal } from "services/http";
@@ -8,8 +7,14 @@ import { z } from "zod";
 
 const createUnitSchema = z.object({ name: z.string().min(1), description: z.string().optional() });
 
+interface Unit {
+  id: string;
+  name: string;
+  description?: string | null;
+}
+
 export default function UnitsPage() {
-  const [units, setUnits] = useState<Unit[]>([]);
+  const [units, _setUnits] = useState<Unit[]>([]);
   const [newName, setNewName] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -17,10 +22,15 @@ export default function UnitsPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const response = await client.units.$get();
-    // const { data } = await validJsonInternal(response);
-    // setUnits(data);
-    setLoading(false);
+    try {
+      const response = await client.units.$get();
+      const { data } = await validJsonInternal(response);
+      setUnits(data);
+    } catch (error) {
+      console.error("Failed to load units:", error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   // Load immediately
@@ -83,7 +93,7 @@ export default function UnitsPage() {
                   </a>
                 </td>
                 <td className={ui.td}>{u.description || "-"}</td>
-                <td className={ui.td}>{"fix me"}</td>
+                <td className={ui.td}>{u.users.length}</td>
                 <td className={ui.td}>
                   <button type="button" onClick={() => remove(u.id)} className={ui.textDanger}>
                     Delete
