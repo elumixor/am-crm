@@ -3,6 +3,9 @@
   "workspaces": {
     "": {
       "name": "am-crm",
+      "dependencies": {
+        "@elumixor/frontils": "^2.14.1",
+      },
       "devDependencies": {
         "@biomejs/biome": "^2.2.2",
         "@types/bun": "latest",

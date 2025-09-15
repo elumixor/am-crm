@@ -1,1 +1,2 @@
-console.log("Hello via Bun!");
+// Game engine entry point
+import "./src/main";

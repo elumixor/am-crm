@@ -27,6 +27,7 @@
     "noPropertyAccessFromIndexSignature": false,
     "baseUrl": ".",
     "paths": {
+      "@engine": ["engine"],
       "@am-crm/shared": ["packages/shared/src"],
       "@am-crm/db": ["packages/db"],
       "@am-crm/api": ["packages/api/src"],
@@ -34,6 +35,6 @@
       "@am-crm/telegram-bot": ["packages/telegram-bot/src"],
     }
   },
-  "include": ["packages/**/*", "index.ts"],
+  "include": ["engine/**/*", "packages/**/*", "index.ts"],
   "exclude": ["node_modules", "dist"]
 }
