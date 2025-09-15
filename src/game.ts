@@ -3,14 +3,23 @@ import { TimeService } from "./services/time-service";
 import { ProgressionService } from "./services/progression-service";
 import { MenuScene } from "./scenes/menu-scene/scene";
 import { CombatScene } from "./scenes/combat-scene/scene";
+import { SafeZoneScene } from "./scenes/safe-zone-scene/scene";
+import { SkillTree } from "./ui/skill-tree";
+import { ResourceManager } from "./resources";
 
 export class GameHypo extends Game {
   private menuScene!: MenuScene;
   private combatScene!: CombatScene;
   private bossCombatScene!: CombatScene;
+  private safeZoneScene!: SafeZoneScene;
+  private skillTree!: SkillTree;
+  private resourceManager!: ResourceManager;
 
   protected override onInit(): void {
     super.onInit();
+    
+    // Initialize resource manager
+    this.resourceManager = new ResourceManager();
     
     // Add global services
     this.addGlobalService(new TimeService());
@@ -20,6 +29,7 @@ export class GameHypo extends Game {
     this.menuScene = this.registerScene(new MenuScene());
     this.combatScene = this.registerScene(new CombatScene(false));
     this.bossCombatScene = this.registerScene(new CombatScene(true));
+    this.safeZoneScene = this.registerScene(new SafeZoneScene());
     
     // Start with menu scene
     this.setActiveScene(this.menuScene);
@@ -27,15 +37,41 @@ export class GameHypo extends Game {
     console.log("[GameHypo] Game initialized with global services and scenes");
   }
 
+  /**
+   * Preload game assets
+   */
+  async preloadAssets(): Promise<void> {
+    console.log("[GameHypo] Preloading game assets...");
+    await this.resourceManager.preloadAll();
+    console.log("[GameHypo] Asset preloading completed");
+  }
+
+  /**
+   * Get loading progress
+   */
+  getLoadingProgress(): number {
+    return this.resourceManager.getLoadingProgress();
+  }
+
   // Public methods for scene transitions
   startNewGame() {
-    console.log("[GameHypo] Starting new game - transitioning to combat");
+    console.log("[GameHypo] Starting new game - transitioning to safe zone");
+    this.setActiveScene(this.safeZoneScene);
+  }
+
+  enterCombat() {
+    console.log("[GameHypo] Entering combat - transitioning to combat scene");
     this.setActiveScene(this.combatScene);
   }
 
   startBossFight() {
     console.log("[GameHypo] Starting boss fight - transitioning to boss combat");
     this.setActiveScene(this.bossCombatScene);
+  }
+
+  returnToSafeZone() {
+    console.log("[GameHypo] Returning to safe zone");
+    this.setActiveScene(this.safeZoneScene);
   }
 
   returnToMenu() {
@@ -61,6 +97,24 @@ export class GameHypo extends Game {
   simulateMenuSelection() {
     if (this.activeScene === this.menuScene) {
       this.menuScene.activateSelection();
+    }
+  }
+
+  simulateVendorInteraction() {
+    if (this.activeScene === this.safeZoneScene) {
+      (this.safeZoneScene as SafeZoneScene).simulatePlayerTalkToVendor();
+    }
+  }
+
+  simulateDialogueChoice(choiceIndex: number) {
+    if (this.activeScene === this.safeZoneScene) {
+      (this.safeZoneScene as SafeZoneScene).simulateDialogueChoice(choiceIndex);
+    }
+  }
+
+  simulatePurchase(itemId: string) {
+    if (this.activeScene === this.safeZoneScene) {
+      (this.safeZoneScene as SafeZoneScene).simulatePurchase(itemId);
     }
   }
 
@@ -93,6 +147,9 @@ export class GameHypo extends Game {
 
   protected override onDestroy(): void {
     super.onDestroy();
+    if (this.resourceManager) {
+      this.resourceManager.dispose();
+    }
     console.log("[GameHypo] Game destroyed and cleaned up");
   }
 }

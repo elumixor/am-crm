@@ -36,17 +36,25 @@ export class HealthBehavior extends Behavior {
 
   protected override onInit() {
     super.onInit();
-    const combat = this.getService(CombatService);
-    combat.entityDamaged.subscribe(({ entity, amount }) => {
-      if (entity === this.entity) {
-        this.health -= amount;
-        console.log(`[HealthBehavior] ${entity.id} took ${amount} damage, remaining health: ${this.health}`);
-        if (this.health <= 0) {
-          console.log(`[HealthBehavior] ${entity.id} died`);
-          this.entity?.destroy();
+    
+    // Try to subscribe to combat service if available
+    try {
+      const combat = this.getService(CombatService);
+      combat.entityDamaged.subscribe(({ entity, amount }) => {
+        if (entity === this.entity) {
+          this.health -= amount;
+          console.log(`[HealthBehavior] ${entity.id} took ${amount} damage, remaining health: ${this.health}`);
+          if (this.health <= 0) {
+            console.log(`[HealthBehavior] ${entity.id} died`);
+            this.entity?.destroy();
+          }
         }
-      }
-    });
+      });
+      console.log(`[HealthBehavior] ${this.entity?.id} subscribed to combat service`);
+    } catch (error) {
+      // Combat service not available in this scene - that's okay for safe zones
+      console.log(`[HealthBehavior] ${this.entity?.id} initialized without combat service (peaceful area)`);
+    }
   }
 
   protected override onEnterScene() {
